@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="pixi.dev.js"></script>
+		<script src="keydrown.js"></script>
+	</head>
+	<body>
+		<script src="QuadTree.js"></script>
+		<script src="asteroids.js"></script>
+		<script src="Component.js"></script>
+		<script src="GraphicsComponent.js"></script>
+		<script src="MovementComponent.js"></script>
+		<script src="InputComponent.js"></script>
+		<script src="CollisionComponent.js"></script>
+		<script src="WrapAroundComponent.js"></script>
+		<script src="AttackComponent.js"></script>
+		<script src="LifetimeComponent.js"></script>
+		<script>
+			"use strict";
+
+			var worldWidth = 1000;
+			var worldHeight = 720;
+            var worldDimensions = new Vector(worldWidth, worldHeight);
+
+			var componentManager = new ComponentManager();
+
+			var graphicsComponent = new GraphicsComponent(componentManager.messageHub, worldDimensions);
+			var movementComponent = new MovementComponent(componentManager.messageHub);
+			var inputComponent = new InputComponent(componentManager.messageHub);
+			var collisionComponent = new CollisionComponent(componentManager.messageHub, worldDimensions);
+			var wrapAroundComponent = new WrapAroundComponent(componentManager.messageHub, worldDimensions);
+			var attackComponent = new AttackComponent(componentManager.messageHub);
+			var lifetimeComponent = new LifetimeComponent(componentManager.messageHub);
+
+			componentManager.addComponent(inputComponent);
+			componentManager.addComponent(attackComponent);
+			componentManager.addComponent(movementComponent);
+			componentManager.addComponent(collisionComponent);
+			componentManager.addComponent(wrapAroundComponent);
+			componentManager.addComponent(graphicsComponent);
+			componentManager.addComponent(lifetimeComponent);
+
+			var player = componentManager.createEntity(["input", "attack", "movement", "collision", "wrapAround", "graphics"]);
+
+			player.position.x = worldWidth / 2;
+			player.position.y = worldHeight / 2;
+
+			player.movement.turnRate = 0.1;
+			player.movement.acceleration = 0.3;
+
+			player.attack.fireRate = 0.5;
+
+			player.collision.mass = 10;
+
+			player.graphics.model.push({x: 15, y: 0});
+			player.graphics.model.push({x: -15, y: 15});
+			player.graphics.model.push({x: -15, y: -15});
+			player.graphics.model.push({x: 15, y: 0});
+
+			for (var i = 0; i < 20; i++) {
+				var asteroid = componentManager.createEntity(["movement", "collision", "wrapAround", "graphics"]);
+
+				asteroid.position.x = Math.random() * worldWidth;
+				asteroid.position.y = Math.random() * worldHeight;
+				asteroid.rotation = Math.random() * Math.PI * 2;
+
+				asteroid.movement.xVel = Math.random() * 5 - 2.5;
+				asteroid.movement.yVel = Math.random() * 5 - 2.5;
+
+				asteroid.collision.mass = 20;
+
+				asteroid.graphics.color = Math.round(Math.random() * 16777215);
+				asteroid.graphics.model.push({x: 15, y: -15});
+				asteroid.graphics.model.push({x: 15, y: 15});
+				asteroid.graphics.model.push({x: -15, y: 15});
+				asteroid.graphics.model.push({x: -15, y: -15});
+				asteroid.graphics.model.push({x: 15, y: -15});
+			}
+
+requestAnimFrame(function () { componentManager.update(function () { graphicsComponent.renderQuadtree(collisionComponent.quadtree); }); });
+		</script>
+	</body>
+</html>

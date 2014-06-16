@@ -3,6 +3,10 @@
 var MovementComponent = function (messageHub) {
 	MovementComponent.shortName = "movement";
 	this.shortName = MovementComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     this.dependencies = ["position"];
 	this.messageHub = messageHub;
 

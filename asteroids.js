@@ -1,5 +1,6 @@
 "use strict";
 
+var debug = true;
 
 function generateId() {	
 	if ( typeof generateId.counter == 'undefined' ) {
@@ -24,8 +25,15 @@ var Vector = function(x, y) {
     }
 }
 
-var Entity = function () {
+var EntityTemplate = function () {
+    
+}
+
+var Entity = function (entityTypeName) {
 	this.id = generateId();
+    if (typeof name != 'undefined') {
+        this.entityTypeName = entityTypeName;
+    }
 	this.dead = false;
 
 	this.position = new Vector();
@@ -113,9 +121,20 @@ MessageHub.prototype = {
 
 var EntityFactory = function (availableComponents) {
 	this.components = availableComponents;
+    this.entityTemplates = {};
 }
 
 EntityFactory.prototype = {
+    addEntityTemplate: function (name, template) {
+        if (name in this.entityTemplates) {
+            throw "Entity with name " + name + " already exists";
+        }
+
+        this.entityTemplates[name] = template;
+
+        if (debug)
+            console.log("Added entity template: " + name);
+    },
 	createEntity: function (entityName, componentData) {
 		var entity = {};
 
@@ -124,13 +143,13 @@ EntityFactory.prototype = {
 
 			entity.collision.radius = 2;
 			entity.collision.mass = 2;
+            entity.collision.collisionDamage = 10;
 
 			entity.lifetime.dieOnCollision = true;
 
 			entity.graphics.model.push({x: 2, y: 0});
 			entity.graphics.model.push({x: -2, y: 2});
 			entity.graphics.model.push({x: -2, y: -2});
-			entity.graphics.model.push({x: 2, y: 0});
 
 			entity.owner = componentData.owner;
 
@@ -161,6 +180,26 @@ EntityFactory.prototype = {
 		}
 
 		return entity;
-	}
+	},
+    createEntityFromTemplate: function (templateName) {
+        var template = this.entityTemplates[templateName];
+        var entity = this.createBareEntity(template.components);
+
+        for (var i = 0; i < template.components.length; i++) {
+            var componentName = template.components[i];
+            var componentData = template[componentName];
+
+            entity.entityTypeName = template.entityTypeName;
+
+            if (componentData != null) {
+                for (var dataKey in componentData) {
+                    entity[componentName][dataKey] = componentData[dataKey];
+                }
+            }
+            
+        }
+
+        return entity;
+    }
 
 }

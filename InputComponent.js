@@ -3,6 +3,10 @@
 var InputComponent = function (messageHub) {
     InputComponent.shortName = "input";
     this.shortName = InputComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     var me = this;
     kd.UP.down(function () { me.up(); });
     kd.DOWN.down(function () { me.down(); });

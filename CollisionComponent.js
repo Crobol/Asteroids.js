@@ -3,6 +3,10 @@
 var CollisionComponent = function (messageHub, worldDimensions) {
     CollisionComponent.shortName = "collision";
     this.shortName = CollisionComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     this.messageHub = messageHub;
 
     this.quadtree = new QuadTree({x: 0, y: 0, width: worldDimensions.x, height: worldDimensions.y});
@@ -208,12 +212,21 @@ CollisionComponent.collisionResponse = function (a, b) {
 
     b.movement.xVel += impulse.x * mass2;
     b.movement.yVel += impulse.y * mass2;
+
+    if (a.hasComponent("health")) {
+        a.health.hitPoints -= b.collision.collisionDamage;
+    }
+
+    if (b.hasComponent("health")) {
+        b.health.hitPoints -= a.collision.collisionDamage;
+    }
 }   
 
 CollisionComponent.prototype.createComponentEntityData = function () {
     var collision = {
         radius: 20,
-        mass: 1
+        mass: 1,
+        collisionDamage: 0
     };
 
     return collision;

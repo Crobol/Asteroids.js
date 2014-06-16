@@ -3,6 +3,10 @@
 var GraphicsComponent = function (messageHub, viewportDimensions) {
     GraphicsComponent.shortName = "graphics";
     this.shortName = GraphicsComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     this.dependencies = ["position"];
     this.messageHub = messageHub;
 
@@ -75,6 +79,8 @@ GraphicsComponent.prototype.drawModel = function (graphic, model, color) {
     for (var i = 1; i < model.length; i++) {
         graphic.lineTo(model[i].x, model[i].y);
     }
+
+    graphic.lineTo(model[0].x, model[0].y);
 }
 
 
@@ -111,6 +117,11 @@ function drawNode(node, graphics)
 // Statics
 
 GraphicsComponent.createComponentEntityData = function () {
-    var graphics = { model: [], refresh: true, color: 0x33FF00 };
+    var graphics = { 
+        model: [], 
+        refresh: true, 
+        color: 0x33FF00 
+    }
+    ;
     return graphics;
 }

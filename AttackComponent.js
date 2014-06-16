@@ -3,6 +3,10 @@
 var AttackComponent = function (messageHub) {
 	AttackComponent.shortName = "attack";
 	this.shortName = AttackComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     this.dependencies = ["position"];
 	this.messageHub = messageHub;
 

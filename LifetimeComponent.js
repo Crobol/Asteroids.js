@@ -3,6 +3,10 @@
 var LifetimeComponent = function (messageHub) {
 	LifetimeComponent.shortName = "lifetime";
 	this.shortName = LifetimeComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
 	this.messageHub = messageHub;
 
 	this.registerCallbacks(this.messageHub);

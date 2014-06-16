@@ -3,6 +3,10 @@
 var WrapAroundComponent = function (messageHub, worldDimensions) {
 	WrapAroundComponent.shortName = "wrapAround";
 	this.shortName = WrapAroundComponent.shortName;
+
+    if (debug)
+        console.log("Creating component: " + this.shortName);
+
     this.dependencies = ["position", "movement"];
 	this.worldDimensions = worldDimensions;
 }

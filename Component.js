@@ -16,6 +16,9 @@ Component.prototype = {
         
         this.entities.push(entity);
         entity[this.shortName] = this.createComponentEntityData();
+
+        //if (debug)
+        //    console.log("Registered entity " + entity.id + " with component " + this.shortName);
     },
     registerEntity: function (entity) {
         this.registerEntityBase(entity);

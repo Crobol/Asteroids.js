@@ -46,14 +46,52 @@ Entity.prototype = {
 	}
 }
 
+var EntityManager = function (messageHub, componentManager, entityFactory) {
+    this.entities = [];
+    this.messageHub = messageHub;
+    this.componentManager = componentManager;
+	this.entityFactory = entityFactory;
+
+    var me = this;
+	this.messageHub.registerCallback("spawnEntity", function (message) { me.spawnEntity(message); });
+}
+
+EntityManager.prototype = {
+    update: function (extra) {
+        this.componentManager.update(extra);
+        for (var i = 0; i < this.entities.length; i++) {
+            var entity = this.entities[i];
+            if (entity.dead) {
+                this.deleteEntity(entity);
+            }
+        }
+		var me = this;
+		requestAnimFrame(function () { me.update(extra); extra(); });
+    },
+    addEntity: function (entity) {
+        this.entities.push(entity);
+    },
+    deleteEntity: function (entity) {
+        this.componentManager.deleteEntity(entity);
+        var index = this.entities.indexOf(entity);
+        if (index != -1) {
+            this.entities.splice(index, 1);
+        }
+    },
+    // Callbacks
+    spawnEntity: function (message) {
+        var entity = this.entityFactory.createEntityFromTemplate(message.entityTypeName, message.componentData);
+        if (typeof message.sender != 'undefined' && message.sender != null)
+            entity.owner = message.sender.id;
+        this.entities.push(entity);
+    }
+};
+
 var ComponentManager = function () {
 	this.components = [];
-	this.entities = [];
 	this.messageHub = new MessageHub();
-	this.entityFactory = new EntityFactory(this.components);
 
 	var me = this;
-	this.messageHub.registerCallback("spawnProjectile", function (message) { me.spawnProjectile(message); });
 }
 
 ComponentManager.prototype = {
@@ -66,41 +104,17 @@ ComponentManager.prototype = {
 			var component = this.components[i];
 			component.update(date);
 		}
-		var me = this;
-		requestAnimFrame(function () { me.update(extra); extra(); });
-
-		for (var i = 0; i < this.entities.length; i++) {
-			var entity = this.entities[i];
-			if (entity.dead) {
-				this.deleteEntity(entity);
-			}
-		}
-	},
-	createEntity: function (components) {
-		var entity = this.entityFactory.createBareEntity(components);
-		this.entities.push(entity);
-		return entity;
 	},
 	deleteEntity: function (entity) {
 		for (var i = 0; i < this.components.length; i++) {
             this.components[i].unregisterEntity(entity);
 		}
-        
-        var index = this.entities.indexOf(entity);
-        if (index > -1) {
-            this.entities.splice(index, 1);
-        }
 	},
 
-	// Callbacks
-	spawnProjectile: function (message) {
-		var entity = this.entityFactory.createEntity("projectile", message.componentData);
-		this.entities.push(entity);
-	}
 }
 
 var MessageHub = function () {
-	this.callbacks = [];
+	this.callbacks = {};
 }
 
 MessageHub.prototype = {
@@ -111,6 +125,9 @@ MessageHub.prototype = {
 		this.callbacks[messageType].push(callback);
 	},
 	sendMessage: function (message) {
+        if (!message.type in this.callbacks)
+            return;
+
 		for (var i = 0; i < this.callbacks[message.type].length; i++) {
 			this.callbacks[message.type][i](message);
 		}
@@ -181,22 +198,59 @@ EntityFactory.prototype = {
 
 		return entity;
 	},
-    createEntityFromTemplate: function (templateName) {
+    createEntityFromTemplate: function (templateName, overrides) {
         var template = this.entityTemplates[templateName];
-        var entity = this.createBareEntity(template.components);
+        var entity = new Entity();
+
+        entity.entityTypeName = template.entityTypeName;
+
+        if (typeof template.rotation != 'undefined' && template.rotation != null) {
+            entity.rotation = template.rotation;
+        }
+
+        if (typeof template.position != 'undefined' && template.position != null) {
+            entity.position = template.position;
+        }
+
+        if (overrides != null) {
+            if (typeof overrides.position != 'undefined') {
+                entity.position = overrides.position;
+            }
+             if (typeof overrides.rotation != 'undefined') {
+                entity.rotation = overrides.rotation;
+            }
+        }
+
 
         for (var i = 0; i < template.components.length; i++) {
             var componentName = template.components[i];
             var componentData = template[componentName];
+            var componentIndex = -1;
+            
+            for (var j = 0; j < this.components.length; j++) {
+                if (this.components[j].shortName == componentName) {
+                    componentIndex = j;
+                    break;
+                }
+            }
 
-            entity.entityTypeName = template.entityTypeName;
+            if (componentIndex != -1)
+                entity[componentName] = this.components[componentIndex].createComponentEntityData();
 
             if (componentData != null) {
                 for (var dataKey in componentData) {
                     entity[componentName][dataKey] = componentData[dataKey];
                 }
             }
-            
+
+            if (overrides != null) {
+                for (var overrideKey in overrides[componentName]) {
+                    entity[componentName][overrideKey] = overrides[componentName][overrideKey];
+                }
+            }
+
+            if (componentIndex != -1) 
+                this.components[componentIndex].registerEntity(entity);
         }
 
         return entity;

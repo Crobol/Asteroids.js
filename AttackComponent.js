@@ -35,15 +35,18 @@ AttackComponent.prototype.attack = function (message) {
         entity.attack.lastFire = this.now.getTime();
 
         var projectile = {
-            owner: entity.id,
             rotation: entity.rotation,
             position: new Vector(entity.position.x, entity.position.y),
+            movement: {
+                xVel: 14 * Math.cos(entity.rotation),
+                yVel: 14 * Math.sin(entity.rotation)
+            },
             collision: {
                 dieOnCollision: true
             }
         };
 
-        this.messageHub.sendMessage({ type: "spawnProjectile", componentData: projectile });
+        this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "projectile", componentData: projectile });
     }	
 }
 

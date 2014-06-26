@@ -3,9 +3,10 @@
 	<head>
 		<script src="pixi.dev.js"></script>
 		<script src="keydrown.js"></script>
+		<script src="proton-1.0.0.min.js"></script>
 	</head>
-	<body>
-        <p style="position: absolute; color: #00FF00;">Kills: <span id="kills"/> </p>
+	<body style="font-family: 'Courier New', Courier, monospace">
+    <p style="position: absolute; left: 20px; color: #00FF00;">Kills: <span id="kills">0</span> </p>
 		<script src="QuadTree.js"></script>
 		<script src="asteroids.js"></script>
 		<script src="Component.js"></script>
@@ -17,6 +18,7 @@
 		<script src="WrapAroundComponent.js"></script>
 		<script src="AttackComponent.js"></script>
 		<script src="LifetimeComponent.js"></script>
+		<script src="DestructableComponent.js"></script>
 		<script src="FrictionComponent.js"></script>
         <script src="EntityTemplates.js"></script>
 		<script>
@@ -32,26 +34,29 @@
             if (debug)
                 console.log("Setting world dimensions to " + worldDimensions.x + "x" + worldDimensions.y);
 
+            var messageHub = new MessageHub();
 			var componentManager = new ComponentManager();
 
-            componentManager.messageHub.registerCallback('entityKilled', function (message) { 
+            messageHub.registerCallback('entityKilled', function (message) { 
                     kills = kills + 1; 
                     document.getElementById('kills').innerHTML = kills;
-                    console.log(message.entityType + " killed");
+                    if (debug)
+                        console.log(message.entityType + " killed");
                 });
 
             if (debug)
                 console.log("Creating components...");
 
-			var graphicsComponent = new GraphicsComponent(componentManager.messageHub, worldDimensions);
-			var movementComponent = new MovementComponent(componentManager.messageHub);
-			var inputComponent = new InputComponent(componentManager.messageHub);
-			var collisionComponent = new CollisionComponent(componentManager.messageHub, worldDimensions);
-			var healthComponent = new HealthComponent(componentManager.messageHub);
-			var wrapAroundComponent = new WrapAroundComponent(componentManager.messageHub, worldDimensions);
-			var attackComponent = new AttackComponent(componentManager.messageHub);
-			var lifetimeComponent = new LifetimeComponent(componentManager.messageHub);
-			var frictionComponent = new FrictionComponent(componentManager.messageHub);
+			var graphicsComponent = new GraphicsComponent(messageHub, worldDimensions);
+			var movementComponent = new MovementComponent(messageHub);
+			var inputComponent = new InputComponent(messageHub);
+			var collisionComponent = new CollisionComponent(messageHub, worldDimensions);
+			var healthComponent = new HealthComponent(messageHub);
+			var wrapAroundComponent = new WrapAroundComponent(messageHub, worldDimensions);
+			var attackComponent = new AttackComponent(messageHub);
+			var lifetimeComponent = new LifetimeComponent(messageHub);
+			var destructableComponent = new DestructableComponent(messageHub);
+			var frictionComponent = new FrictionComponent(messageHub);
 
 			componentManager.addComponent(inputComponent);
 			componentManager.addComponent(attackComponent);
@@ -61,36 +66,50 @@
 			componentManager.addComponent(healthComponent);
 			componentManager.addComponent(wrapAroundComponent);
 			componentManager.addComponent(graphicsComponent);
+			componentManager.addComponent(destructableComponent);
 			componentManager.addComponent(lifetimeComponent);
-            
-            componentManager.entityFactory.addEntityTemplate("player", playerTemplate);
-            componentManager.entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
 
-            var player = componentManager.entityFactory.createEntityFromTemplate("player");
+            var entityFactory = new EntityFactory(componentManager.components);
+            
+            entityFactory.addEntityTemplate("player", playerTemplate);
+            entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
+            entityFactory.addEntityTemplate("projectile", projectileTemplate);
+
+            var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
+
+            var player = entityManager.entityFactory.createEntityFromTemplate("player");
             player.position.x = worldDimensions.x / 2;
 			player.position.y = worldDimensions.y / 2;
+            entityManager.addEntity(player);
 
-			for (var i = 0; i < 5; i++) {
-				var asteroid = componentManager.entityFactory.createEntityFromTemplate("asteroid");
-                componentManager.entities.push(asteroid); // TODO: Get rid of this. Component manager should not know about entities
-
-				asteroid.position.x = Math.random() * worldDimensions.x;
-				asteroid.position.y = Math.random() * worldDimensions.y;
-				asteroid.rotation = Math.random() * Math.PI * 2;
-
-				asteroid.movement.xVel = Math.random() * 5 - 2.5;
-				asteroid.movement.yVel = Math.random() * 5 - 2.5;
-
-				asteroid.graphics.color = Math.round(Math.random() * 16777215);
-
+            var asteroidColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ff00, 0x00ffff, 0xffffff];
+			for (var i = 0; i < 10; i++) {
+                var model = [];
                 var edges = 3 + Math.round(Math.random() * 5);
                 var unit = 2 * Math.PI / edges;
-                for (var j = 0; j < edges; j++) {
-                    asteroid.graphics.model.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
-                }
-			}
 
-requestAnimFrame(function () { componentManager.update(function () { graphicsComponent.renderQuadtree(collisionComponent.quadtree); }); });
+                for (var j = 0; j < edges; j++) {
+                    model.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
+                }
+
+                var overrides = { 
+                    position: new Vector(Math.random() * worldDimensions.x, Math.random() * worldDimensions.y), 
+                    graphics: {
+                        color:  asteroidColors[Math.floor(Math.random() * asteroidColors.length)],//Math.round(Math.random() * 16777215),
+                        'model': model
+                    },
+                    movement: {
+                        xVel: Math.random() * 5 - 2.5,
+                        yVel: Math.random() * 5 - 2.5,
+                        turnVel: Math.random() * 0.2 - 0.1
+                    }
+                };
+
+				var asteroid = entityManager.entityFactory.createEntityFromTemplate("asteroid", overrides);
+                entityManager.addEntity(asteroid); 
+            }
+
+requestAnimFrame(function () { entityManager.update(function () { graphicsComponent.renderQuadtree(collisionComponent.quadtree); }); });
 		</script>
 	</body>
 </html>

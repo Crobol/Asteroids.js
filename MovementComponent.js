@@ -22,6 +22,7 @@ MovementComponent.prototype.update = function (now) {
         var entity = this.entities[i];
         entity.position.x += entity.movement.xVel; 
         entity.position.y += entity.movement.yVel;
+        entity.rotation += entity.movement.turnVel;
     }
 }
 
@@ -61,7 +62,8 @@ MovementComponent.prototype.createComponentEntityData = function () {
 		xVel: 0,
 		yVel: 0,
 		acceleration: 0.0,
-		turnRate: 0.0
+		turnRate: 0.0,
+        turnVel: 0
 	};
 
 	return movement;

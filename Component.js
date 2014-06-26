@@ -10,12 +10,11 @@ Component.prototype = {
     registerEntityBase: function (entity) {
         for (var key in this.dependencies) {
             if (!entity.hasComponent(this.dependencies[key])) {
-                throw "Entity is missing required component dependencies for this component";
+                throw "Entity is missing required component dependency " + this.dependencies[key] + " for component " + this.shortName;
             }
         }
         
         this.entities.push(entity);
-        entity[this.shortName] = this.createComponentEntityData();
 
         //if (debug)
         //    console.log("Registered entity " + entity.id + " with component " + this.shortName);
@@ -25,7 +24,7 @@ Component.prototype = {
     },
     unregisterEntityBase: function (entity) {
         var index = this.entities.indexOf(entity);
-        if (index > -1) {
+        if (index != -1) {
             this.entities.splice(index, 1);
         }
     },
@@ -47,6 +46,9 @@ Component.prototype = {
             }
         }
         return false;
+    },
+    updateBase: function () {
+        
     },
     createComponentEntityData: function () {
         return {};

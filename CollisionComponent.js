@@ -106,8 +106,14 @@ CollisionComponent.prototype.resolveCollisions = function (a, b) {
     if ("owner" in b && b.owner == a.id)
         return;
     
+    if (a.componentPropertyContains(this.shortName, "collisionExceptions", b.entityTypeName))
+        return;
+
+    if (b.componentPropertyContains(this.shortName, "collisionExceptions", a.entityTypeName))
+        return;
+
     if (CollisionComponent.checkCollision(a, b)) {
-        CollisionComponent.collisionResponse(a, b);
+        this.collisionResponse(a, b);
         this.messageHub.sendMessage({ type: "collision", entityId: a.id });
         this.messageHub.sendMessage({ type: "collision", entityId: b.id });
     }
@@ -143,7 +149,7 @@ CollisionComponent.checkCollision = function (a, b) {
     return d > 0;
 }
 
-CollisionComponent.collisionResponse = function (a, b) {
+CollisionComponent.prototype.collisionResponse = function (a, b) {
     var d = { 
         x: b.position.x - a.position.x,
         y: b.position.y - a.position.y
@@ -213,12 +219,14 @@ CollisionComponent.collisionResponse = function (a, b) {
     b.movement.xVel += impulse.x * mass2;
     b.movement.yVel += impulse.y * mass2;
 
-    if (a.hasComponent("health")) {
-        a.health.hitPoints -= b.collision.collisionDamage;
+    if (a.hasComponent("health") && !a.componentPropertyContains("health", "damageExceptions", b.entityTypeName)) {
+        a.health.currentHitPoints -= b.collision.collisionDamage;
+        this.messageHub.sendMessage({ type: "damageTaken", entityId: a.id, fromEntityId: b.id }); // TODO: Move this to HealthComponent as reponse to takeDamage message
     }
 
-    if (b.hasComponent("health")) {
-        b.health.hitPoints -= a.collision.collisionDamage;
+    if (b.hasComponent("health") && !b.componentPropertyContains("health", "damageExceptions", a.entityTypeName)) {
+        b.health.currentHitPoints -= a.collision.collisionDamage;
+        this.messageHub.sendMessage({ type: "damageTaken", entityId: b.id, fromEntityId: a.id });
     }
 }   
 

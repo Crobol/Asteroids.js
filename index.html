@@ -5,9 +5,14 @@
 		<script src="keydrown.js"></script>
 		<script src="proton-1.0.0.min.js"></script>
 	</head>
-	<body style="font-family: 'Courier New', Courier, monospace">
-    <p style="position: absolute; left: 20px; color: #00FF00;">Kills: <span id="kills">0</span> </p>
+	<body style="font-family: 'Courier New', Courier, monospace; color: #00FF00;">
+        <p style="position: absolute; left: 20px; top: 400px; color: black;">Switch weapon on 'S'</p>
+        <span style="position: absolute; left: 20px; top: 20px;">Kills: <span id="kills">0</span> </span>
+        <span style="position: absolute; left: 20px; top: 40px; ">Health: <span id="hitPoints"></span></span>
+        <span style="position: absolute; left: 20px; top: 60px; ">Weapon: <span id="weapon"></span></span>
+
 		<script src="QuadTree.js"></script>
+        <script src="GraphicsSystem.js"></script>
 		<script src="asteroids.js"></script>
 		<script src="Component.js"></script>
 		<script src="GraphicsComponent.js"></script>
@@ -20,6 +25,7 @@
 		<script src="LifetimeComponent.js"></script>
 		<script src="DestructableComponent.js"></script>
 		<script src="FrictionComponent.js"></script>
+		<script src="HudComponent.js"></script>
         <script src="EntityTemplates.js"></script>
 		<script>
 			"use strict";
@@ -38,10 +44,15 @@
 			var componentManager = new ComponentManager();
 
             messageHub.registerCallback('entityKilled', function (message) { 
-                    kills = kills + 1; 
-                    document.getElementById('kills').innerHTML = kills;
+                    if (message.entityTypeName == 'asteroid') {
+                        kills = kills + 1; 
+                        document.getElementById('kills').innerHTML = kills;
+                    }
+                    else if (message.entityTypeName == 'player') {
+                        alert('Game over, man, game over.');
+                    }
                     if (debug)
-                        console.log(message.entityType + " killed");
+                        console.log(message.entityTypeName + " killed");
                 });
 
             if (debug)
@@ -57,6 +68,7 @@
 			var lifetimeComponent = new LifetimeComponent(messageHub);
 			var destructableComponent = new DestructableComponent(messageHub);
 			var frictionComponent = new FrictionComponent(messageHub);
+			var hudComponent = new HudComponent(messageHub);
 
 			componentManager.addComponent(inputComponent);
 			componentManager.addComponent(attackComponent);
@@ -68,12 +80,18 @@
 			componentManager.addComponent(graphicsComponent);
 			componentManager.addComponent(destructableComponent);
 			componentManager.addComponent(lifetimeComponent);
+			componentManager.addComponent(hudComponent);
+
+            for (var i = 0; i < models.length; i++) {
+                graphicsComponent.addModel(models[i]);
+            }
 
             var entityFactory = new EntityFactory(componentManager.components);
             
             entityFactory.addEntityTemplate("player", playerTemplate);
             entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
             entityFactory.addEntityTemplate("projectile", projectileTemplate);
+            entityFactory.addEntityTemplate("flakProjectile", flakProjectileTemplate);
 
             var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
 
@@ -95,9 +113,10 @@
                 var overrides = { 
                     position: new Vector(Math.random() * worldDimensions.x, Math.random() * worldDimensions.y), 
                     graphics: {
+model: {
                         color:  asteroidColors[Math.floor(Math.random() * asteroidColors.length)],//Math.round(Math.random() * 16777215),
-                        'model': model
-                    },
+                        'points': model
+       }          },
                     movement: {
                         xVel: Math.random() * 5 - 2.5,
                         yVel: Math.random() * 5 - 2.5,
@@ -109,7 +128,7 @@
                 entityManager.addEntity(asteroid); 
             }
 
-requestAnimFrame(function () { entityManager.update(function () { graphicsComponent.renderQuadtree(collisionComponent.quadtree); }); });
+requestAnimFrame(function () { entityManager.update(function () { GraphicsSystem.renderQuadtree(collisionComponent.quadtree); }); });
 		</script>
 	</body>
 </html>

@@ -41,9 +41,9 @@ DestructableComponent.prototype.entityKilled = function(message) {
     var scale = entity.destructable.scale;
 
     for (var i = 0; i < numToSpawn; i++) {
-        var model = [];
+        var model = { color: entity.graphics.model.color, points: [] };
         for (var j = 0; j < edges; j++) {
-            model.push({x: 20 * scale * Math.cos(unit * j), y: 20 * scale * Math.sin(unit * j)});
+            model.points.push({x: 20 * scale * Math.cos(unit * j), y: 20 * scale * Math.sin(unit * j)});
         }
 
         var overrides = {
@@ -59,10 +59,11 @@ DestructableComponent.prototype.entityKilled = function(message) {
             },
             collision: {
                 radius: entity.collision.radius * scale,
-                mass: entity.collision.mass * scale
+                mass: entity.collision.mass * scale,
+                collisionDamage: entity.collision.collisionDamage * scale
             },
             health: {
-                hitPoints: 20
+                hitPoints: entity.health.hitPoints * scale
             },
             destructable: {
                 "scale": scale / 2,

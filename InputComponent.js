@@ -13,6 +13,7 @@ var InputComponent = function (messageHub) {
     kd.LEFT.down(function () { me.left(); });
     kd.RIGHT.down(function () { me.right(); });
     kd.SPACE.down(function () { me.space(); });
+    kd.S.down(function () { me.s(); });
     this.messageHub = messageHub;
 }
 
@@ -49,5 +50,11 @@ InputComponent.prototype.right = function () {
 InputComponent.prototype.space = function () {
     for (var i = 0; i < this.entities.length; i++) {
         this.messageHub.sendMessage({type: "shoot", entityId: this.entities[i].id});
+    }
+}
+
+InputComponent.prototype.s = function () {
+    for (var i = 0; i < this.entities.length; i++) {
+        this.messageHub.sendMessage({type: "switchWeapon", entityId: this.entities[i].id});
     }
 }

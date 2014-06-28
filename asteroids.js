@@ -43,7 +43,15 @@ var Entity = function (entityTypeName) {
 Entity.prototype = {
 	hasComponent: function (componentShortName) {
 		return typeof this[componentShortName] != 'undefined';
-	}
+	},
+    hasComponentProperty: function (componentShortName, propertyName) {
+        return typeof this[componentShortName] != 'undefined' && typeof this[componentShortName][propertyName] != 'undefined';
+    },
+    componentPropertyContains: function (componentShortName, propertyName, contains) {
+        if (this.hasComponentProperty(componentShortName, propertyName))
+            return this[componentShortName][propertyName].indexOf(contains) != -1;
+        return false;
+    }
 }
 
 var EntityManager = function (messageHub, componentManager, entityFactory) {

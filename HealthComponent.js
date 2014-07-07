@@ -23,6 +23,7 @@ HealthComponent.prototype.registerEntity = function (entity) {
 
 HealthComponent.prototype.registerCallbacks = function (messageHub) {
     var me = this;
+    messageHub.registerCallback("collision", function (message) { me.onCollision(message); });
 }
 
 HealthComponent.prototype.update = function (now) {
@@ -38,10 +39,28 @@ HealthComponent.prototype.update = function (now) {
     }
 }
 
+HealthComponent.prototype.onCollision = function (message) {
+    var entity = this.getEntityById(message.entityId);
+    var collidingEntity = message.collidingEntity;
+
+    if (entity == null || collidingEntity == null)
+        return;
+
+    if (entity.componentPropertyContains("health", "damageExceptions", collidingEntity.entityTypeName))
+        return;
+
+    if (this.now.getTime() - entity.health.lastDamageTakenTime > 200) {
+        entity.health.lastDamageTakenTime = this.now.getTime();
+        entity.health.currentHitPoints -= collidingEntity.collision.collisionDamage;
+        this.messageHub.sendMessage({ type: "damageTaken", entityId: entity.id, fromEntityId: collidingEntity.id });
+    }
+}
+
 HealthComponent.prototype.createComponentEntityData = function () {
 	var health = {
         hitPoints: 1,
-        currentHitPoints: 1
+        currentHitPoints: 1,
+        lastDamageTakenTime: 0
 	};
 
 	return health;

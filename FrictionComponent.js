@@ -23,10 +23,15 @@ FrictionComponent.prototype.update = function (now) {
         if (entity.movement.xVel != 0) {
             entity.movement.xVel = entity.movement.xVel * entity.friction.frictionFactor;
         }
+        else if (entity.movement.xVel < 0.0001) {
+            entity.movement.xVel = 0;
+        }
         if (entity.movement.yVel != 0) {
             entity.movement.yVel = entity.movement.yVel * entity.friction.frictionFactor;
         }
-
+        else if (entity.movement.yVel < 0.0001) {
+            entity.movement.yVel = 0;
+        }
     }
 }
 

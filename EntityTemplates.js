@@ -40,7 +40,15 @@ var playerTemplate = {
     components: ["input", "attack", "movement", "friction", "collision", "health", "wrapAround", "graphics", "hud"],
     position: new Vector(0, 0),
     graphics: {
-        model: "player" 
+        model: "player",
+        particleEmitterTemplates: [{
+            triggerMessageType: "damageTaken",
+            model: "particle",
+            rate: new Proton.Rate(new Proton.Span(5, 10), new Proton.Span(0.01)),
+            initialize: [new Proton.Life(1), new Proton.V(new Proton.Span(1), new Proton.Span(0, 360), 'polar'), new Proton.Position(new Proton.CircleZone(0, 0, 17))],
+            behaviours: [new Proton.Alpha(1, 0), new Proton.Rotate()],
+            position: new Vector(0, 0)
+        }]
     },
     movement: {
         turnRate: 0.1,
@@ -61,7 +69,7 @@ var asteroidTemplate = {
     collision: {
         mass: 20,
         radius: 17,
-        collisionDamage: 1
+        collisionDamage: 10
     },
     health: {
         hitPoints: 20,
@@ -105,7 +113,7 @@ var projectileTemplate = {
     graphics: {
         model: "projectile",
         particleEmitterTemplates: [{
-                rate: new Proton.Rate(new Proton.Span(1, 2), new Proton.Span(0.01)),
+                rate: new Proton.Rate(new Proton.Span(0.5, 1), new Proton.Span(0.01)),
                 model: "particle",
                 initialize: [new Proton.Life(1), new Proton.V(new Proton.Span(0.3), new Proton.Span(0, 360), 'polar')],
                 behaviours: [new Proton.Alpha(1, 0)],

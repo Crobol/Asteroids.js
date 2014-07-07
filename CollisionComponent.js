@@ -41,7 +41,7 @@ CollisionComponent.prototype.update = function (now) {
         var leaf = leaves[i];
 
         var childLen = leaf.children.length;
-        var childLen2 = leaf.children.length - leaf.children.length / 2;
+        var childLen2 = Math.ceil(leaf.children.length - leaf.children.length / 2);
 
         for (var k = 0; k < childLen; k++) {
             var a = this.entities[leaf.children[k].index];
@@ -114,8 +114,8 @@ CollisionComponent.prototype.resolveCollisions = function (a, b) {
 
     if (CollisionComponent.checkCollision(a, b)) {
         this.collisionResponse(a, b);
-        this.messageHub.sendMessage({ type: "collision", entityId: a.id });
-        this.messageHub.sendMessage({ type: "collision", entityId: b.id });
+        this.messageHub.sendMessage({ type: "collision", entityId: a.id, collidingEntity: b });
+        this.messageHub.sendMessage({ type: "collision", entityId: b.id, collidingEntity: a });
     }
 
 }
@@ -219,15 +219,13 @@ CollisionComponent.prototype.collisionResponse = function (a, b) {
     b.movement.xVel += impulse.x * mass2;
     b.movement.yVel += impulse.y * mass2;
 
-    if (a.hasComponent("health") && !a.componentPropertyContains("health", "damageExceptions", b.entityTypeName)) {
-        a.health.currentHitPoints -= b.collision.collisionDamage;
-        this.messageHub.sendMessage({ type: "damageTaken", entityId: a.id, fromEntityId: b.id }); // TODO: Move this to HealthComponent as reponse to takeDamage message
+    /*if (a.hasComponent("health") && ) {
+        this.messageHub.sendMessage({ type: "collision", entityId: a.id, collidingEntity: b }); // TODO: Move this to HealthComponent as reponse to takeDamage message
     }
 
     if (b.hasComponent("health") && !b.componentPropertyContains("health", "damageExceptions", a.entityTypeName)) {
-        b.health.currentHitPoints -= a.collision.collisionDamage;
-        this.messageHub.sendMessage({ type: "damageTaken", entityId: b.id, fromEntityId: a.id });
-    }
+        this.messageHub.sendMessage({ type: "collision", entityId: b.id, collidingEntity: a });
+    }*/
 }   
 
 CollisionComponent.prototype.createComponentEntityData = function () {

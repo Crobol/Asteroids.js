@@ -58,7 +58,7 @@ AttackComponent.prototype.attack = function (message) {
                     position: new Vector(entity.position.x, entity.position.y),
                     movement: {
                         xVel: (14 + offset) * Math.cos(rotation),
-                        yVel:  (14 + offset) * Math.sin(rotation)
+                        yVel: (14 + offset) * Math.sin(rotation)
                     }
                 };
 

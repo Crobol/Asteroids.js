@@ -7,6 +7,7 @@ var CollisionComponent = function (messageHub, worldDimensions) {
     if (debug)
         console.log("Creating component: " + this.shortName);
 
+    this.dependencies = ["position", "movement"];
     this.messageHub = messageHub;
 
     this.quadtree = new QuadTree({x: 0, y: 0, width: worldDimensions.x, height: worldDimensions.y});

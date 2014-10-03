@@ -30,18 +30,20 @@ GraphicsComponent.prototype.addModel = function (model) {
 GraphicsComponent.prototype.registerEntity = function (entity) {
     this.registerEntityBase(entity);
 
-    var sprite = this.graphics.createSpriteFromModel(entity.graphics.model);
-    sprite.position.x = entity.position.x;
-    sprite.position.y = entity.position.y;
-    sprite.rotation = entity.rotation;
+    if (typeof entity.graphics.model != 'undefined') {
+        var sprite = this.graphics.createSpriteFromModel(entity.graphics.model);
+        sprite.position.x = entity.position.x;
+        sprite.position.y = entity.position.y;
+        sprite.rotation = entity.rotation;
 
-    var blurSprite = this.graphics.createSpriteFromModel(entity.graphics.model, true);
-    blurSprite.position.x = entity.position.x;
-    blurSprite.position.y = entity.position.y;
-    blurSprite.rotation = entity.rotation;
+        var blurSprite = this.graphics.createSpriteFromModel(entity.graphics.model, true);
+        blurSprite.position.x = entity.position.x;
+        blurSprite.position.y = entity.position.y;
+        blurSprite.rotation = entity.rotation;
 
-    entity.graphics.sprites.push(sprite);
-    entity.graphics.sprites.push(blurSprite);
+        entity.graphics.sprites.push(sprite);
+        entity.graphics.sprites.push(blurSprite);
+    }
 
     if (typeof  entity.graphics.particleEmitterTemplates != 'undefined') {
         for (var i = 0; i < entity.graphics.particleEmitterTemplates.length; i++) {
@@ -54,10 +56,13 @@ GraphicsComponent.prototype.registerEntity = function (entity) {
             else if (typeof template.model == 'string' && typeof template.model.color != 'undefined') {
                 color = template.model.color;
             }
-            else if (typeof template.model == 'string' && typeof entity.graphics.model.color != 'undefined') {
+            else if (typeof template.model == 'string' && typeof entity.graphics.model != 'undefined' && typeof entity.graphics.model.color != 'undefined') {
                 color = entity.graphics.model.color;
             }
             var emitter = this.graphics.createParticleEmitter(template, color);
+            if (typeof template.onCreate != 'undefined') {
+                template.onCreate(emitter, entity);
+            }
             entity.graphics.particleEmitters.push(emitter);
         }
     }
@@ -159,7 +164,6 @@ GraphicsComponent.prototype.onDamageTaken = function (message) {
             emitter.emit();
             this.graphics.proton.update();
             emitter.stopEmit();
-
         }
     }
 }
@@ -176,4 +180,3 @@ GraphicsComponent.createComponentEntityData = function () {
 
     return graphics;
 }
-

@@ -4,6 +4,7 @@
 		<script src="pixi.dev.js"></script>
 		<script src="keydrown.js"></script>
 		<script src="proton-1.0.0.min.js"></script>
+        <script src="p2.min.js"></script>
 	</head>
 	<body style="font-family: 'Courier New', Courier, monospace; color: #00FF00;">
         <p style="position: absolute; left: 20px; top: 400px; color: black;">Switch weapon on 'S'</p>
@@ -92,6 +93,7 @@
             entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
             entityFactory.addEntityTemplate("projectile", projectileTemplate);
             entityFactory.addEntityTemplate("flakProjectile", flakProjectileTemplate);
+            entityFactory.addEntityTemplate("laser", laserTemplate);
 
             var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
 
@@ -105,16 +107,17 @@
                 entityManager.addEntity(asteroid); 
             }
 
-
-
             /*setInterval(function () {
                 var asteroid = createRandomAsteroid(entityManager, worldDimensions);
                 entityManager.addEntity(asteroid); 
             }, 5000);*/
 
-
-
-requestAnimFrame(function () { entityManager.update(function () { GraphicsSystem.renderQuadtree(collisionComponent.quadtree); }); });
+            //var laser = entityManager.entityFactory.createEntityFromTemplate("laser");
+            //laser.position.x = worldDimensions.x / 2;
+			//laser.position.y = worldDimensions.y / 2;
+            //entityManager.addEntity(laser);
+    
+            requestAnimFrame(function () { entityManager.update(function () { GraphicsSystem.renderQuadtree(collisionComponent.quadtree); }); });
 		</script>
 	</body>
 </html>

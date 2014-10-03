@@ -29,7 +29,7 @@ AttackComponent.prototype.update = function (now) {
     this.now = now;
 }
 
-	// Callbacks
+// Callbacks
 AttackComponent.prototype.switchWeapon = function (message) {
     var entity = this.getEntityById(message.entityId);
     
@@ -50,7 +50,7 @@ AttackComponent.prototype.attack = function (message) {
         entity.attack.lastFire = this.now.getTime();
 
         if (entity.attack.flak) {
-            for (var i = 0; i < 4; i++) {
+            /*for (var i = 0; i < 4; i++) {
                 var rotation = entity.rotation + (Math.random() * 0.05 * Math.PI - 0.05 * Math.PI / 2);
                 var offset = Math.random() * 4;
                 var projectile = {
@@ -63,7 +63,16 @@ AttackComponent.prototype.attack = function (message) {
                 };
 
                 this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "flakProjectile", componentData: projectile });
-            }
+            }*/
+
+
+
+            var laser = {
+                rotation: entity.rotation,
+                position: new Vector(entity.position.x, entity.position.y)
+            };
+
+            this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "laser", componentData: laser });
         }
         else {
             var projectile = {
@@ -76,9 +85,9 @@ AttackComponent.prototype.attack = function (message) {
                 collision: {
                     dieOnCollision: true
                 }
-            }
+            };
                 
-                this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "projectile", componentData: projectile });
+            this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "projectile", componentData: projectile });
         }
     }	
 }

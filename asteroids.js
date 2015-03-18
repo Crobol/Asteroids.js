@@ -280,6 +280,8 @@ function createRandomAsteroid(entityManager, worldDimensions) {
     var model = [];
     var edges = 3 + Math.round(Math.random() * 5);
     var unit = 2 * Math.PI / edges;
+    var velocity = 500;
+    var angularVelocity = 5;
 
     for (var j = 0; j < edges; j++) {
         model.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
@@ -288,14 +290,15 @@ function createRandomAsteroid(entityManager, worldDimensions) {
     var overrides = { 
         position: new Vector(Math.random() * worldDimensions.x, Math.random() * worldDimensions.y), 
         graphics: {
-model: {
-            color:  primaryColors[Math.floor(Math.random() * primaryColors.length)],//Math.round(Math.random() * 16777215),
-            'points': model
-}          },
+            model: {
+                color:  primaryColors[Math.floor(Math.random() * primaryColors.length)],//Math.round(Math.random() * 16777215),
+                'points': model
+            }
+        },
         movement: {
-            xVel: Math.random() * 5 - 2.5,
-            yVel: Math.random() * 5 - 2.5,
-            turnVel: Math.random() * 0.2 - 0.1
+            xVel: Math.random() * velocity - velocity / 2,
+            yVel: Math.random() * velocity - velocity / 2,
+            turnVel: Math.random() * angularVelocity - angularVelocity / 2
         }
     };
 

@@ -67,8 +67,8 @@ var EntityManager = function (messageHub, componentManager, entityFactory) {
 }
 
 EntityManager.prototype = {
-    update: function (extra) {
-        this.componentManager.update(extra);
+    update: function () {
+        this.componentManager.update();
         for (var i = 0; i < this.entities.length; i++) {
             var entity = this.entities[i];
             if (entity.dead) {
@@ -76,7 +76,7 @@ EntityManager.prototype = {
             }
         }
 		var me = this;
-		requestAnimFrame(function () { me.update(extra); extra(); });
+		requestAnimFrame(function () { me.update(); });
     },
     addEntity: function (entity) {
         this.entities.push(entity);
@@ -108,7 +108,7 @@ ComponentManager.prototype = {
 	addComponent: function (component) {
 		this.components.push(component);
 	},
-	update: function (extra) {
+	update: function () {
 		var date = new Date();
 		for (var i = 0; i < this.components.length; i++) {
 			var component = this.components[i];

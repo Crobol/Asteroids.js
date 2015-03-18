@@ -50,7 +50,7 @@ AttackComponent.prototype.attack = function (message) {
         entity.attack.lastFire = this.now.getTime();
 
         if (entity.attack.flak) {
-            /*for (var i = 0; i < 4; i++) {
+            for (var i = 0; i < 4; i++) {
                 var rotation = entity.rotation + (Math.random() * 0.05 * Math.PI - 0.05 * Math.PI / 2);
                 var offset = Math.random() * 4;
                 var projectile = {
@@ -63,26 +63,26 @@ AttackComponent.prototype.attack = function (message) {
                 };
 
                 this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "flakProjectile", componentData: projectile });
-            }*/
+            }
 
 
 
-            var laser = {
-                rotation: entity.rotation,
-                position: new Vector(entity.position.x, entity.position.y)
-            };
+            //var laser = {
+            //    rotation: entity.rotation,
+             //   position: new Vector(entity.position.x, entity.position.y)
+            //};
 
-            this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "laser", componentData: laser });
+            //this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "laser", componentData: laser });
         }
         else {
             var projectile = {
                 rotation: entity.rotation,
                 position: new Vector(entity.position.x, entity.position.y),
                 movement: {
-                    xVel: 14 * Math.cos(entity.rotation),
-                    yVel: 14 * Math.sin(entity.rotation)
+                    xVel: 1000 * Math.cos(entity.rotation),
+                    yVel: 1000 * Math.sin(entity.rotation)
                 },
-                collision: {
+                physics: {
                     dieOnCollision: true
                 }
             };

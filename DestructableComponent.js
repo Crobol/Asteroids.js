@@ -57,10 +57,10 @@ DestructableComponent.prototype.entityKilled = function(message) {
                 yVel: Math.random() * 5 - 2.5,
                 turnVel: Math.random() * 0.2 - 0.1
             },
-            collision: {
-                radius: entity.collision.radius * scale,
-                mass: entity.collision.mass * scale,
-                collisionDamage: entity.collision.collisionDamage * scale
+            physics: {
+                radius: entity.physics.radius * scale,
+                mass: entity.physics.mass * scale,
+                collisionDamage: entity.physics.collisionDamage * scale
             },
             health: {
                 hitPoints: entity.health.hitPoints * scale

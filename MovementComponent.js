@@ -18,20 +18,20 @@ var MovementComponent = function (messageHub) {
 MovementComponent.prototype = new Component();
 
 MovementComponent.prototype.update = function (now) {
-    for (var i = 0; i < this.entities.length; i++) {
+    /*for (var i = 0; i < this.entities.length; i++) {
         var entity = this.entities[i];
         entity.position.x += entity.movement.xVel; 
         entity.position.y += entity.movement.yVel;
         entity.rotation += entity.movement.turnVel;
-    }
+    }*/
 }
 
 MovementComponent.prototype.registerCallbacks = function(messageHub) {
     var me = this;
-    messageHub.registerCallback("accelerate", function (message) { me.accelerate(message); });
+    /*messageHub.registerCallback("accelerate", function (message) { me.accelerate(message); });
     messageHub.registerCallback("deaccelerate", function (message) { me.deaccelerate(message); });
     messageHub.registerCallback("turnLeft", function (message) { me.turnLeft(message); });
-    messageHub.registerCallback("turnRight", function (message) { me.turnRight(message); });
+    messageHub.registerCallback("turnRight", function (message) { me.turnRight(message); });*/
 }
 
 	// Private callbacks

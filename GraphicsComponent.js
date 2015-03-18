@@ -45,7 +45,7 @@ GraphicsComponent.prototype.registerEntity = function (entity) {
         entity.graphics.sprites.push(blurSprite);
     }
 
-    if (typeof  entity.graphics.particleEmitterTemplates != 'undefined') {
+    if (typeof entity.graphics.particleEmitterTemplates != 'undefined') {
         for (var i = 0; i < entity.graphics.particleEmitterTemplates.length; i++) {
             var template = entity.graphics.particleEmitterTemplates[i];
 
@@ -72,6 +72,7 @@ GraphicsComponent.prototype.unregisterEntity = function (entity) {
     for (var i = 0; i < entity.graphics.sprites.length; i++) {
         this.graphics.destroySprite(entity.graphics.sprites[i]);
     }
+
     entity.graphics.sprites.length = 0;
 
     for (var i = 0; i < entity.graphics.particleEmitters.length; i++) {
@@ -155,8 +156,8 @@ GraphicsComponent.prototype.onDamageTaken = function (message) {
             d.x = d.x / length;
             d.y = d.y / length;
 
-            d.x = d.x * entity.collision.radius;
-            d.y = d.y * entity.collision.radius;
+            d.x = d.x * entity.physics.radius;
+            d.y = d.y * entity.physics.radius;
 
             emitter.p.x -= d.x;
             emitter.p.y -= d.y;

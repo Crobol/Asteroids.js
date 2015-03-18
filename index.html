@@ -19,7 +19,7 @@
 		<script src="GraphicsComponent.js"></script>
 		<script src="MovementComponent.js"></script>
 		<script src="InputComponent.js"></script>
-		<script src="CollisionComponent.js"></script>
+		<script src="PhysicsComponent.js"></script>
 		<script src="HealthComponent.js"></script>
 		<script src="WrapAroundComponent.js"></script>
 		<script src="AttackComponent.js"></script>
@@ -34,7 +34,7 @@
             if (debug)
                 console.log("Starting asteroids...");
 
-            var worldDimensions = new Vector(700, 400);
+            var worldDimensions = new Vector(1200, 600);
 
             var kills = 0;
 
@@ -62,7 +62,7 @@
 			var graphicsComponent = new GraphicsComponent(messageHub, worldDimensions);
 			var movementComponent = new MovementComponent(messageHub);
 			var inputComponent = new InputComponent(messageHub);
-			var collisionComponent = new CollisionComponent(messageHub, worldDimensions);
+			var physicsComponent = new PhysicsComponent(messageHub, worldDimensions);
 			var healthComponent = new HealthComponent(messageHub);
 			var wrapAroundComponent = new WrapAroundComponent(messageHub, worldDimensions);
 			var attackComponent = new AttackComponent(messageHub);
@@ -75,7 +75,7 @@
 			componentManager.addComponent(attackComponent);
 			componentManager.addComponent(movementComponent);
 			componentManager.addComponent(frictionComponent);
-			componentManager.addComponent(collisionComponent);
+			componentManager.addComponent(physicsComponent);
 			componentManager.addComponent(healthComponent);
 			componentManager.addComponent(wrapAroundComponent);
 			componentManager.addComponent(graphicsComponent);
@@ -102,11 +102,6 @@
 			player.position.y = worldDimensions.y / 2;
             entityManager.addEntity(player);
 
-			for (var i = 0; i < 1; i++) {
-                var asteroid = createRandomAsteroid(entityManager, worldDimensions);
-                entityManager.addEntity(asteroid); 
-            }
-
             /*setInterval(function () {
                 var asteroid = createRandomAsteroid(entityManager, worldDimensions);
                 entityManager.addEntity(asteroid); 
@@ -117,7 +112,38 @@
 			//laser.position.y = worldDimensions.y / 2;
             //entityManager.addEntity(laser);
     
-            requestAnimFrame(function () { entityManager.update(function () { GraphicsSystem.renderQuadtree(collisionComponent.quadtree); }); });
+            var asteroidColors = [0xff0000, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff];
+			for (var i = 0; i < 100; i++) {
+                var model = [];
+                var edges = 3 + Math.round(Math.random() * 5);
+                var unit = 2 * Math.PI / edges;
+                var velocity = 5000;
+                var angularVelocity = 5;
+
+                for (var j = 0; j < edges; j++) {
+                    model.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
+                }
+
+                var overrides = { 
+                    position: new Vector(Math.random() * worldDimensions.x, Math.random() * worldDimensions.y), 
+                    graphics: {
+                        model: {
+                            color:  asteroidColors[Math.floor(Math.random() * asteroidColors.length)],//Math.round(Math.random() * 16777215),
+                            'points': model
+                        }
+                    },
+                    movement: {
+                        xVel: Math.random() * velocity - velocity / 2,
+                        yVel: Math.random() * velocity - velocity / 2,
+                        turnVel: Math.random() * angularVelocity - angularVelocity / 2
+                    }
+                };
+
+				var asteroid = entityManager.entityFactory.createEntityFromTemplate("asteroid", overrides);
+                entityManager.addEntity(asteroid); 
+            }
+
+            requestAnimFrame(function () { entityManager.update(); });
 		</script>
 	</body>
 </html>

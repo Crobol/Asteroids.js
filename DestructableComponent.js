@@ -35,7 +35,7 @@ DestructableComponent.prototype.entityKilled = function(message) {
     if (entity.destructable.stage == 1)
         return;
 
-    var numToSpawn = entity.destructable.stage; //Math.round(entity.destructable.edges / 3);
+    var numToSpawn = entity.destructable.stage;
     var edges = entity.graphics.model.length > 3 ? entity.graphics.model.length - 1 : 3;
     var unit = 2 * Math.PI / edges;
     var scale = entity.destructable.scale;

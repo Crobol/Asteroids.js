@@ -85,9 +85,6 @@ GraphicsComponent.prototype.unregisterEntity = function (entity) {
 GraphicsComponent.prototype.update = function (now) {
     for (var i = 0; i < this.entities.length; i++) {
         var entity = this.entities[i];
-        //var sprite = this.graphics.sprites[entity.id];
-        //var blurSprite = this.blurSprites[entity.id];
-
 
         for (var j = 0; j < entity.graphics.sprites.length; j++) {
             var sprite = entity.graphics.sprites[j];
@@ -101,25 +98,12 @@ GraphicsComponent.prototype.update = function (now) {
             emitter.p.x = entity.position.x;
             emitter.p.y = entity.position.y;
         }
-        
-        /*blurSprite.position.x = entity.position.x;
-        blurSprite.position.y = entity.position.y;
-        blurSprite.rotation = entity.rotation;
-
-        if (entity.id in this.emitters) {
-            var emitter = this.emitters[entity.id];
-            emitter.p.x = entity.position.x;
-            emitter.p.y = entity.position.y;
-        }*/
     }
     this.graphics.update();
 }
 
-
-
-
-GraphicsComponent.prototype.createComponentEntityData = function () {
-    return GraphicsComponent.createComponentEntityData();
+GraphicsComponent.prototype.createDefaultEntityData = function () {
+    return GraphicsComponent.createDefaultEntityData();
 }
 
 // Callbacks
@@ -171,7 +155,7 @@ GraphicsComponent.prototype.onDamageTaken = function (message) {
 
 // Statics
 
-GraphicsComponent.createComponentEntityData = function () {
+GraphicsComponent.createDefaultEntityData = function () {
     var graphics = { 
         refresh: true, 
         color: 0x33FF00,

@@ -57,7 +57,7 @@ MovementComponent.prototype.turnRight = function (message) {
     entity.rotation += entity.movement.turnRate;
 }
 
-MovementComponent.prototype.createComponentEntityData = function () {
+MovementComponent.prototype.createDefaultEntityData = function () {
 	var movement = {
 		xVel: 0,
 		yVel: 0,

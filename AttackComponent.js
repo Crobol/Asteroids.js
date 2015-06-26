@@ -37,8 +37,13 @@ AttackComponent.prototype.switchWeapon = function (message) {
         return;
 
     if (this.now.getTime() - this.lastSwitch > 200) {
-        console.log('switch');
-        entity.attack.flak = !entity.attack.flak;
+        entity.attack.selectedWeapon++;
+
+        if (entity.attack.selectedWeapon > entity.attack.weapons.length - 1) {
+            entity.attack.selectedWeapon = 0;
+        }
+
+        console.log('Switching weapon to ' + entity.attack.weapons[entity.attack.selectedWeapon]);
         this.lastSwitch = this.now.getTime();
     }
 }
@@ -46,53 +51,20 @@ AttackComponent.prototype.switchWeapon = function (message) {
 AttackComponent.prototype.attack = function (message) {
     var entity = this.getEntityById(message.entityId);
 
-    if (this.now.getTime() - entity.attack.lastFire > entity.attack.fireRate * 1000) {
+    var selectedWeapon = entity.attack.weapons[entity.attack.selectedWeapon];
+
+    if (this.now.getTime() - entity.attack.lastFire > selectedWeapon.fireRate * 1000) {
         entity.attack.lastFire = this.now.getTime();
 
-        if (entity.attack.flak) {
-            for (var i = 0; i < 4; i++) {
-                var rotation = entity.rotation + (Math.random() * 0.05 * Math.PI - 0.05 * Math.PI / 2);
-                var offset = Math.random() * 4;
-                var projectile = {
-                    rotation: rotation,
-                    position: new Vector(entity.position.x, entity.position.y),
-                    movement: {
-                        xVel: (1000 + offset) * Math.cos(rotation),
-                        yVel: (1000 + offset) * Math.sin(rotation)
-                    }
-                };
+        var projectiles = selectedWeapon.createProjectiles(entity)
 
-                this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "flakProjectile", componentData: projectile });
-            }
-
-
-
-            //var laser = {
-            //    rotation: entity.rotation,
-             //   position: new Vector(entity.position.x, entity.position.y)
-            //};
-
-            //this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "laser", componentData: laser });
-        }
-        else {
-            var projectile = {
-                rotation: entity.rotation,
-                position: new Vector(entity.position.x, entity.position.y),
-                movement: {
-                    xVel: 1000 * Math.cos(entity.rotation),
-                    yVel: 1000 * Math.sin(entity.rotation)
-                },
-                physics: {
-                    dieOnCollision: true
-                }
-            };
-                
-            this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: "projectile", componentData: projectile });
+        for (var i = 0; i < projectiles.length; i++) {
+            this.messageHub.sendMessage({ type: "spawnEntity", sender: entity, entityTypeName: projectiles[i].entityTypeName, componentData: projectiles[i] });
         }
     }	
 }
 
-AttackComponent.prototype.createComponentEntityData = function () {
+AttackComponent.prototype.createDefaultEntityData = function () {
 	var attack = {
 		fireRate: 1,
 		lastFire: 0

@@ -56,7 +56,7 @@ HealthComponent.prototype.onCollision = function (message) {
     }
 }
 
-HealthComponent.prototype.createComponentEntityData = function () {
+HealthComponent.prototype.createDefaultEntityData = function () {
 	var health = {
         hitPoints: 1,
         currentHitPoints: 1,

@@ -46,7 +46,7 @@ LifetimeComponent.prototype.onCollision = function (message) {
     }
 }
 
-LifetimeComponent.prototype.createComponentEntityData = function () {
+LifetimeComponent.prototype.createDefaultEntityData = function () {
 	var lifetime = {
 		birthtime: new Date().getTime(),
 		lifetime: 1 * 500,

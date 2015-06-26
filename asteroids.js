@@ -28,12 +28,12 @@ var Vector = function(x, y) {
 }
 
 var EntityTemplate = function () {
-    
+
 }
 
 var Entity = function (entityTypeName) {
 	this.id = generateId();
-    if (typeof name != 'undefined') {
+    if (typeof entityTypeName != 'undefined') {
         this.entityTypeName = entityTypeName;
     }
 	this.dead = false;
@@ -43,6 +43,9 @@ var Entity = function (entityTypeName) {
 }
 
 Entity.prototype = {
+    registerComponent: function (componentShortName) {
+        this[componentShortName] = {};
+    },
 	hasComponent: function (componentShortName) {
 		return typeof this[componentShortName] != 'undefined';
 	},
@@ -50,9 +53,31 @@ Entity.prototype = {
         return typeof this[componentShortName] != 'undefined' && typeof this[componentShortName][propertyName] != 'undefined';
     },
     componentPropertyContains: function (componentShortName, propertyName, contains) {
-        if (this.hasComponentProperty(componentShortName, propertyName))
+        if (this.hasComponentProperty(componentShortName, propertyName)) {
             return this[componentShortName][propertyName].indexOf(contains) != -1;
+        }
         return false;
+    },
+    setComponentData: function (componentShortName, data) {
+        if (this.hasComponent(componentShortName)) {
+            this[componentShortName] = data;
+        } else {
+            throw "Trying to set data of missing component " + componentShortName;
+        }
+    },
+    setComponentProperty: function (componentShortName, propertyName, value) {
+        if (this.hasComponent(componentShortName)) {
+            this[componentShortName][propertyName] = value;
+        } else {
+            throw "Trying to set property " + propertyName + " of missing component " + componentShortName;
+        }
+    },
+    getComponentProperty: function (componentShortName, propertyName) {
+        if (this.hasComponentProperty(componentShortName, propertyName)) {
+            return this[componentShortName][propertyName];
+        } else {
+            throw "Trying to get property " + propertyName + " of missing component " + componentShortName;
+        }
     }
 }
 
@@ -60,10 +85,10 @@ var EntityManager = function (messageHub, componentManager, entityFactory) {
     this.entities = [];
     this.messageHub = messageHub;
     this.componentManager = componentManager;
-	this.entityFactory = entityFactory;
+    this.entityFactory = entityFactory;
 
     var me = this;
-	this.messageHub.registerCallback("spawnEntity", function (message) { me.spawnEntity(message); });
+    this.messageHub.registerCallback("spawnEntity", function (message) { me.spawnEntity(message); });
 }
 
 EntityManager.prototype = {
@@ -119,29 +144,28 @@ ComponentManager.prototype = {
 		for (var i = 0; i < this.components.length; i++) {
             this.components[i].unregisterEntity(entity);
 		}
-	},
-
+	}
 }
 
 var MessageHub = function () {
-	this.callbacks = {};
+    this.callbacks = {};
 }
 
 MessageHub.prototype = {
-	registerCallback: function (messageType, callback) {
-		if (typeof this.callbacks[messageType] == 'undefined') {
-			this.callbacks[messageType] = [];
-		}
-		this.callbacks[messageType].push(callback);
-	},
-	sendMessage: function (message) {
+    registerCallback: function (messageType, callback) {
+        if (typeof this.callbacks[messageType] == 'undefined') {
+            this.callbacks[messageType] = [];
+        }
+        this.callbacks[messageType].push(callback);
+    },
+    sendMessage: function (message) {
         if (!message.type in this.callbacks)
             return;
 
-		for (var i = 0; i < this.callbacks[message.type].length; i++) {
-			this.callbacks[message.type][i](message);
-		}
-	}
+        for (var i = 0; i < this.callbacks[message.type].length; i++) {
+            this.callbacks[message.type][i](message);
+        }
+    }
 }
 
 
@@ -162,54 +186,53 @@ EntityFactory.prototype = {
         if (debug)
             console.log("Added entity template: " + name);
     },
-	createEntity: function (entityName, componentData) {
-		var entity = {};
+	//createEntity: function (entityName, componentData) {
+		//var entity = {};
 
-		if (entityName == "projectile") {
-			entity = this.createBareEntity(["lifetime", "movement", "collision", "graphics"]);
+		//if (entityName == "projectile") {
+			//entity = this.createBareEntity(["lifetime", "movement", "collision", "graphics"]);
 
-			entity.collision.radius = 2;
-			entity.collision.mass = 2;
-            entity.collision.collisionDamage = 10;
+			//entity.collision.radius = 2;
+			//entity.collision.mass = 2;
+            //entity.collision.collisionDamage = 10;
 
-			entity.lifetime.dieOnCollision = true;
+			//entity.lifetime.dieOnCollision = true;
 
-			entity.graphics.model.push({x: 2, y: 0});
-			entity.graphics.model.push({x: -2, y: 2});
-			entity.graphics.model.push({x: -2, y: -2});
+			//entity.graphics.model.push({x: 2, y: 0});
+			//entity.graphics.model.push({x: -2, y: 2});
+			//entity.graphics.model.push({x: -2, y: -2});
 
-			entity.owner = componentData.owner;
+			//entity.owner = componentData.owner;
 
-			if (typeof componentData.position != 'undefined') {
-                entity.rotation = componentData.rotation;
-				entity.position = componentData.position;
+			//if (typeof componentData.position != 'undefined') {
+                //entity.rotation = componentData.rotation;
+				//entity.position = componentData.position;
 
-				entity.movement.xVel = 14 * Math.cos(entity.rotation);
-				entity.movement.yVel = 14 * Math.sin(entity.rotation);
-			}
-		}
+				//entity.movement.xVel = 14 * Math.cos(entity.rotation);
+				//entity.movement.yVel = 14 * Math.sin(entity.rotation);
+			//}
+		//}
 
-		return entity;
-	},
-	createBareEntity: function (components) {
-		var entity = new Entity();
+		//return entity;
+	//},
+    createBareEntity: function (components) {
+        var entity = new Entity();
 
-		var componentsToRegister = [];
-		for (var i = 0; i < this.components.length; i++) {
-			if (components.indexOf(this.components[i].shortName) != -1) {
-				componentsToRegister.push(this.components[i]);
-			}
-		}
+        var componentsToRegister = [];
+        for (var i = 0; i < this.components.length; i++) {
+            if (components.indexOf(this.components[i].shortName) != -1) {
+                componentsToRegister.push(this.components[i]);
+            }
+        }
 
-		for (var i = 0; i < componentsToRegister.length; i++) {
-			var component = componentsToRegister[i];
-			component.registerEntity(entity);
-		}
+        for (var i = 0; i < componentsToRegister.length; i++) {
+            var component = componentsToRegister[i];
+            component.registerEntity(entity);
+		    }
 
-		return entity;
-	},
+		    return entity;
+    },
     createEntityFromTemplate: function (templateName, overrides) {
-
         var template = this.entityTemplates[templateName];
         if (template == null)
             throw "No template with name " + templateName + " is registered";
@@ -238,12 +261,13 @@ EntityFactory.prototype = {
             }
         }
 
-
         for (var i = 0; i < template.components.length; i++) {
             var componentName = template.components[i];
-            var componentData = template[componentName];
+            var componentData = {};
+            var componentDataFromTemplate = template[componentName];
             var componentIndex = -1;
             
+            // Find component with corresponding short name in available components
             for (var j = 0; j < this.components.length; j++) {
                 if (this.components[j].shortName == componentName) {
                     componentIndex = j;
@@ -251,28 +275,35 @@ EntityFactory.prototype = {
                 }
             }
 
-            if (componentIndex != -1)
-                entity[componentName] = this.components[componentIndex].createComponentEntityData();
+            // Check if component was found and create default data
+            if (componentIndex != -1) {
+                componentData = this.components[componentIndex].createDefaultEntityData();
+            }
 
-            if (componentData != null) {
-                for (var dataKey in componentData) {
-                    entity[componentName][dataKey] = componentData[dataKey];
+            // Override default values with template specific values
+            if (componentDataFromTemplate != null) {
+                for (var dataKey in componentDataFromTemplate) {
+                    componentData[dataKey] = componentDataFromTemplate[dataKey];
                 }
             }
 
+            // Override default and template values with override values
             if (overrides != null) {
                 for (var overrideKey in overrides[componentName]) {
-                    entity[componentName][overrideKey] = overrides[componentName][overrideKey];
+                    componentData[overrideKey] = overrides[componentName][overrideKey];
                 }
             }
 
-            if (componentIndex != -1) 
+            // Register entity
+            if (componentIndex != -1) {
+                entity.registerComponent(componentName);
+                entity.setComponentData(componentName, componentData);
                 this.components[componentIndex].registerEntity(entity);
+            }
         }
 
         return entity;
     }
-
 }
 
 

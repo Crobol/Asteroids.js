@@ -134,7 +134,8 @@ PhysicsComponent.prototype.onCollision = function (e) {
     this.messageHub.sendMessage({ type: "collision", entityId: bodyB.entityId });
 }
 
-PhysicsComponent.prototype.createComponentEntityData = function () {
+PhysicsComponent.prototype.createDefaultEntityData = function () {
+    // Default values
     var physics = {
         radius: 20,
         mass: 1,

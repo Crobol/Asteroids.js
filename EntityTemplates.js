@@ -71,8 +71,11 @@ var playerTemplate = {
         acceleration: 10
     },
     attack: {
-        fireRate: 0.4,
-        flak: true
+        selectedWeapon: 0,
+        weapons: [
+            new Single(0.3, 1000),
+            new Multiple(0.4, 1000)
+        ]
     },
     health: {
         hitPoints: 100
@@ -144,7 +147,7 @@ var projectileTemplate = {
             }
         ]
     }
-}
+};
 
 var flakProjectileTemplate = {
     entityTypeName: "flakProjectile",
@@ -162,34 +165,34 @@ var flakProjectileTemplate = {
     graphics: {
         model: "flakProjectile"
     }
-}
+};
 
-var laserTemplate = {
-    entityTypeName: "laser",
-    components: ["lifetime", "graphics"],
-    lifetime: {
-        lifetime: 100,
-        dieOnCollision: false
-    },
-    graphics: {
-        particleEmitterTemplates: [{
-                onCreate: function (emitter, entity) {
-                    var x1 = 20 * Math.cos(entity.rotation);
-                    var y1 = 20 * Math.sin(entity.rotation);
-                    var x2 = 500 * Math.cos(entity.rotation);
-                    var y2 = 500 * Math.sin(entity.rotation);
+//var laserTemplate = {
+    //entityTypeName: "laser",
+    //components: ["lifetime", "graphics"],
+    //lifetime: {
+        //lifetime: 100,
+        //dieOnCollision: false
+    //},
+    //graphics: {
+        //particleEmitterTemplates: [{
+                //onCreate: function (emitter, entity) {
+                    //var x1 = 20 * Math.cos(entity.rotation);
+                    //var y1 = 20 * Math.sin(entity.rotation);
+                    //var x2 = 500 * Math.cos(entity.rotation);
+                    //var y2 = 500 * Math.sin(entity.rotation);
 
-                    emitter.addInitialize(new Proton.P(new Proton.LineZone(x1, y1, x2, y2)));
-                },
-                rate: new Proton.Rate(new Proton.Span(20, 30), new Proton.Span(0, 0)),
-                model: "laser",
-                initialize: [new Proton.Life(0.3), new Proton.V(new Proton.Span(0.1, 0.2), new Proton.Span(0, 360), 'polar'), new Proton.Mass(1)],
-                behaviours: [new Proton.Alpha(1, 0)],
-                position: new Vector(0, 0)
-            }
-        ],
-        onRegister: function (entity) {
+                    //emitter.addInitialize(new Proton.P(new Proton.LineZone(x1, y1, x2, y2)));
+                //},
+                //rate: new Proton.Rate(new Proton.Span(20, 30), new Proton.Span(0, 0)),
+                //model: "laser",
+                //initialize: [new Proton.Life(0.3), new Proton.V(new Proton.Span(0.1, 0.2), new Proton.Span(0, 360), 'polar'), new Proton.Mass(1)],
+                //behaviours: [new Proton.Alpha(1, 0)],
+                //position: new Vector(0, 0)
+            //}
+        //],
+        //onRegister: function (entity) {
             
-        }
-    }
-}
+        //}
+    //}
+//}

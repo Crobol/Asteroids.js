@@ -7,14 +7,14 @@
         <script src="p2.min.js"></script>
 	</head>
 	<body style="font-family: 'Courier New', Courier, monospace; color: #00FF00;">
-        <p style="position: absolute; left: 20px; top: 400px; color: black;">Switch weapon on 'S'</p>
-        <span style="position: absolute; left: 20px; top: 20px;">Kills: <span id="kills">0</span> </span>
-        <span style="position: absolute; left: 20px; top: 40px; ">Health: <span id="hitPoints"></span></span>
-        <span style="position: absolute; left: 20px; top: 60px; ">Weapon: <span id="weapon"></span></span>
+    <p style="position: absolute; left: 20px; top: 400px; color: black;">Switch weapon on 'S'</p>
+    <span style="position: absolute; left: 20px; top: 20px;">Kills: <span id="kills">0</span> </span>
+    <span style="position: absolute; left: 20px; top: 40px; ">Health: <span id="hitPoints"></span></span>
+    <span style="position: absolute; left: 20px; top: 60px; ">Weapon: <span id="weapon"></span></span>
 
-		<script src="QuadTree.js"></script>
-        <script src="GraphicsSystem.js"></script>
-		<script src="asteroids.js"></script>
+    <script src="QuadTree.js"></script>
+    <script src="GraphicsSystem.js"></script>
+    <script src="asteroids.js"></script>
 		<script src="Component.js"></script>
 		<script src="GraphicsComponent.js"></script>
 		<script src="MovementComponent.js"></script>
@@ -27,97 +27,102 @@
 		<script src="DestructableComponent.js"></script>
 		<script src="FrictionComponent.js"></script>
 		<script src="HudComponent.js"></script>
-        <script src="EntityTemplates.js"></script>
+
+    <script src="Weapons/Single.js"></script>
+    <script src="Weapons/Multiple.js"></script>
+
+    <script src="EntityTemplates.js"></script>
+
 		<script>
-			"use strict";
+        "use strict";
 
+        if (debug)
+            console.log("Starting asteroids...");
+
+        var worldDimensions = new Vector(600, 400);
+
+        var kills = 0;
+
+        if (debug)
+            console.log("Setting world dimensions to " + worldDimensions.x + "x" + worldDimensions.y);
+
+        var messageHub = new MessageHub();
+        var componentManager = new ComponentManager();
+
+        messageHub.registerCallback('entityKilled', function (message) { 
             if (debug)
-                console.log("Starting asteroids...");
-
-            var worldDimensions = new Vector(1200, 600);
-
-            var kills = 0;
-
-            if (debug)
-                console.log("Setting world dimensions to " + worldDimensions.x + "x" + worldDimensions.y);
-
-            var messageHub = new MessageHub();
-			var componentManager = new ComponentManager();
-
-            messageHub.registerCallback('entityKilled', function (message) { 
-                    if (debug)
-                        console.log(message.entityTypeName + " killed");
-                    if (message.entityTypeName == 'asteroid') {
-                        kills = kills + 1; 
-                        document.getElementById('kills').innerHTML = kills;
-                    }
-                    else if (message.entityTypeName == 'player') {
-                        console.log('Game over, man, game over.');
-                    }
-                });
-
-            if (debug)
-                console.log("Creating components...");
-
-			var graphicsComponent = new GraphicsComponent(messageHub, worldDimensions);
-			var movementComponent = new MovementComponent(messageHub);
-			var inputComponent = new InputComponent(messageHub);
-			var physicsComponent = new PhysicsComponent(messageHub, worldDimensions);
-			var healthComponent = new HealthComponent(messageHub);
-			var wrapAroundComponent = new WrapAroundComponent(messageHub, worldDimensions);
-			var attackComponent = new AttackComponent(messageHub);
-			var lifetimeComponent = new LifetimeComponent(messageHub);
-			var destructableComponent = new DestructableComponent(messageHub);
-			var frictionComponent = new FrictionComponent(messageHub);
-			var hudComponent = new HudComponent(messageHub);
-
-			componentManager.addComponent(inputComponent);
-			componentManager.addComponent(attackComponent);
-			componentManager.addComponent(movementComponent);
-			componentManager.addComponent(frictionComponent);
-			componentManager.addComponent(physicsComponent);
-			componentManager.addComponent(healthComponent);
-			componentManager.addComponent(wrapAroundComponent);
-			componentManager.addComponent(graphicsComponent);
-			componentManager.addComponent(destructableComponent);
-			componentManager.addComponent(lifetimeComponent);
-			componentManager.addComponent(hudComponent);
-
-            for (var i = 0; i < models.length; i++) {
-                graphicsComponent.addModel(models[i]);
+                console.log(message.entityTypeName + " killed");
+            if (message.entityTypeName == 'asteroid') {
+                kills = kills + 1; 
+                document.getElementById('kills').innerHTML = kills;
             }
-
-            var entityFactory = new EntityFactory(componentManager.components);
-            
-            entityFactory.addEntityTemplate("player", playerTemplate);
-            entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
-            entityFactory.addEntityTemplate("projectile", projectileTemplate);
-            entityFactory.addEntityTemplate("flakProjectile", flakProjectileTemplate);
-            entityFactory.addEntityTemplate("laser", laserTemplate);
-
-            var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
-
-            var player = entityManager.entityFactory.createEntityFromTemplate("player");
-            player.position.x = worldDimensions.x / 2;
-			player.position.y = worldDimensions.y / 2;
-            entityManager.addEntity(player);
-
-            /*setInterval(function () {
-                var asteroid = createRandomAsteroid(entityManager, worldDimensions);
-                entityManager.addEntity(asteroid); 
-            }, 5000);*/
-
-            //var laser = entityManager.entityFactory.createEntityFromTemplate("laser");
-            //laser.position.x = worldDimensions.x / 2;
-			//laser.position.y = worldDimensions.y / 2;
-            //entityManager.addEntity(laser);
-    
-			for (var i = 0; i < 10; i++) {
-                var asteroid = createRandomAsteroid(entityManager, worldDimensions);
-                entityManager.addEntity(asteroid); 
+            else if (message.entityTypeName == 'player') {
+                console.log('Game over, man, game over.');
             }
+        });
 
-            requestAnimFrame(function () { entityManager.update(); });
+        if (debug)
+            console.log("Creating components...");
+
+        var graphicsComponent = new GraphicsComponent(messageHub, worldDimensions);
+        var movementComponent = new MovementComponent(messageHub);
+        var inputComponent = new InputComponent(messageHub);
+        var physicsComponent = new PhysicsComponent(messageHub, worldDimensions);
+        var healthComponent = new HealthComponent(messageHub);
+        var wrapAroundComponent = new WrapAroundComponent(messageHub, worldDimensions);
+        var attackComponent = new AttackComponent(messageHub);
+        var lifetimeComponent = new LifetimeComponent(messageHub);
+        var destructableComponent = new DestructableComponent(messageHub);
+        var frictionComponent = new FrictionComponent(messageHub);
+        var hudComponent = new HudComponent(messageHub);
+
+        componentManager.addComponent(inputComponent);
+        componentManager.addComponent(attackComponent);
+        componentManager.addComponent(movementComponent);
+        componentManager.addComponent(frictionComponent);
+        componentManager.addComponent(physicsComponent);
+        componentManager.addComponent(healthComponent);
+        componentManager.addComponent(wrapAroundComponent);
+        componentManager.addComponent(graphicsComponent);
+        componentManager.addComponent(destructableComponent);
+        componentManager.addComponent(lifetimeComponent);
+        componentManager.addComponent(hudComponent);
+
+        for (var i = 0; i < models.length; i++) {
+            graphicsComponent.addModel(models[i]);
+        }
+
+        var entityFactory = new EntityFactory(componentManager.components);
+
+        entityFactory.addEntityTemplate("player", playerTemplate);
+        entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
+        entityFactory.addEntityTemplate("projectile", projectileTemplate);
+        entityFactory.addEntityTemplate("flakProjectile", flakProjectileTemplate);
+//         entityFactory.addEntityTemplate("laser", laserTemplate);
+
+        var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
+
+        var player = entityManager.entityFactory.createEntityFromTemplate("player");
+        player.position.x = worldDimensions.x / 2;
+    player.position.y = worldDimensions.y / 2;
+        entityManager.addEntity(player);
+
+        /*setInterval(function () {
+            var asteroid = createRandomAsteroid(entityManager, worldDimensions);
+            entityManager.addEntity(asteroid); 
+        }, 5000);*/
+
+        //var laser = entityManager.entityFactory.createEntityFromTemplate("laser");
+        //laser.position.x = worldDimensions.x / 2;
+    //laser.position.y = worldDimensions.y / 2;
+        //entityManager.addEntity(laser);
+
+        for (var i = 0; i < 10; i++) {
+            var asteroid = createRandomAsteroid(entityManager, worldDimensions);
+            entityManager.addEntity(asteroid); 
+        }
+
+        requestAnimFrame(function () { entityManager.update(); });
 		</script>
 	</body>
 </html>

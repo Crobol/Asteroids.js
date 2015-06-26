@@ -53,9 +53,7 @@ HudComponent.prototype.onSwitchWeapon = function (message) {
         return;
 
     if (entity.hasComponent('attack')) {
-        if (entity.attack.flak)
-            document.getElementById('weapon').innerHTML = "Multi";
-        else
-            document.getElementById('weapon').innerHTML = "Single";
+        var weaponName = entity.attack.weapons[entity.attack.selectedWeapon].name;
+        document.getElementById('weapon').innerHTML = weaponName;
     }
 }

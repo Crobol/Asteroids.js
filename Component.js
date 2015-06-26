@@ -15,9 +15,6 @@ Component.prototype = {
         }
         
         this.entities.push(entity);
-
-        //if (debug)
-        //    console.log("Registered entity " + entity.id + " with component " + this.shortName);
     },
     registerEntity: function (entity) {
         this.registerEntityBase(entity);
@@ -50,7 +47,7 @@ Component.prototype = {
     updateBase: function () {
         
     },
-    createComponentEntityData: function () {
+    createDefaultEntityData: function () {
         return {};
     }
 }

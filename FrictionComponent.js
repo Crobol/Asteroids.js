@@ -39,7 +39,7 @@ FrictionComponent.prototype.registerCallbacks = function(messageHub) {
     var me = this;
 }
 
-FrictionComponent.prototype.createComponentEntityData = function () {
+FrictionComponent.prototype.createDefaultEntityData = function () {
 	var friction = {
         frictionFactor: 0.98
 	};

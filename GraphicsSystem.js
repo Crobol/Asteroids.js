@@ -1,46 +1,34 @@
 "use strict";
 
-var GraphicsSystem = function (viewportDimensions) {
+var GraphicsSystem = function (viewportDimensions, worldDimensions) {
+    this.viewportDimensions = new Vector(viewportDimensions.x, viewportDimensions.y);
+    this.worldDimensions = worldDimensions;
     this.renderer = new PIXI.WebGLRenderer(viewportDimensions.x, viewportDimensions.y);
     this.renderer.view.style.display = "block";
     document.body.appendChild(this.renderer.view);
 
-    this.globalBlur = new PIXI.BlurFilter();
-    this.globalBlur.blur = 20;
+    this.cameraPosition = new Vector(0, 0);
 
-    this.stage = new PIXI.Stage;
+    this.grid = new PIXI.Graphics();
+
+    this.globalBlur = new PIXI.filters.BlurFilter();
+    this.globalBlur.blur = 15;
+    this.globalBlur.passes = 5;
+
+    this.stage = new PIXI.Container();
+    //this.stage.rotation = 1;
 
     this.models = {};
     this.textures = {};
 
-    //this.sprites = {};
-    //this.blurSprites = {};
-    //this.emitters = {};
-
-    this.spriteBatch = new PIXI.DisplayObjectContainer();
-    this.blurBatch = new PIXI.DisplayObjectContainer();
+    this.stage.addChild(this.grid);
+    this.spriteBatch = new PIXI.Container();
+    this.blurBatch = new PIXI.Container();
     this.blurBatch.filters = [this.globalBlur];
     this.stage.addChild(this.spriteBatch);
     this.stage.addChild(this.blurBatch);
 
     this._initProton();
-
-    //var emitter = new Proton.Emitter();
-    //emitter.rate = new Proton.Rate(new Proton.Span(20, 30), new Proton.Span(0, 0));
-    //emitter.addInitialize(new Proton.ImageTarget(this.renderTextureFromPoints(
-    //                [{ x: -2, y: -2 }, { x: 2, y: -2 }, { x: 2, y: 2 }, { x: -2, y: 2 }], "0x00ff00"
-    //                )));
-    //emitter.addBehaviour(new Proton.Color('#ffffff'));
-    //emitter.addInitialize(new Proton.Mass(1));
-    //emitter.addInitialize(new Proton.Radius(1, 8));
-    //emitter.addInitialize(new Proton.Life(0.5, 0.5));
-	//emitter.addInitialize(new Proton.P(new Proton.LineZone(200, 200, 500, 250)));
-    //emitter.addInitialize(new Proton.V(new Proton.Span(0.1, 0.2), new Proton.Span(0, 360), 'polar'));
-    //emitter.addBehaviour(new Proton.Alpha(0.5, 0));
-    				//emitter.addBehaviour(new Proton.Color('#ff0000', '#ffff00'));
-	//			emitter.addBehaviour(new Proton.Color(0x0000ff, 0xff0000));
-    //emitter.emit();
-    //this.proton.addEmitter(emitter);
 }
 
 GraphicsSystem.prototype = {
@@ -48,24 +36,24 @@ GraphicsSystem.prototype = {
         var me = this;
         this.proton = new Proton;
 
-        this.colorMatrix =  [1,0,0,0,
-						0,1,0,0,
-						0,0,1,0,
-						0,0,0,1];
-						
-        this.colorFilter = new PIXI.ColorMatrixFilter();
+        this.colorMatrix = [1,0,0,0,
+                            0,1,0,0,
+                            0,0,1,0,
+						                0,0,0,1];
+
+        this.colorFilter = new PIXI.filters.ColorMatrixFilter();
         this.particleBatch = new PIXI.DisplayObjectContainer();
         this.particleBatch.filters = [this.colorFilter];
         this.stage.addChild(this.particleBatch); 
 
         //this.count = 0;
         //this.colorMatrix[1] = Math.sin(1) * 3;
-		//this.colorMatrix[2] = Math.cos(1);
-		//this.colorMatrix[3] = Math.cos(1) * 1.5;
-		//this.colorMatrix[4] = Math.sin(1/3) * 2;
-		//this.colorMatrix[5] = Math.sin(1/2);
-		//this.colorMatrix[6] = Math.sin(1/4);
-		//this.colorFilter.matrix = this.colorMatrix;
+        //this.colorMatrix[2] = Math.cos(1);
+        //this.colorMatrix[3] = Math.cos(1) * 1.5;
+        //this.colorMatrix[4] = Math.sin(1/3) * 2;
+        //this.colorMatrix[5] = Math.sin(1/2);
+        //this.colorMatrix[6] = Math.sin(1/4);
+        //this.colorFilter.matrix = this.colorMatrix;
 
         this.protonRenderer = new Proton.Renderer('other', this.proton);
         this.protonRenderer.onParticleCreated = function(particle) {
@@ -83,6 +71,7 @@ GraphicsSystem.prototype = {
         };
 
         this.protonRenderer.start();
+
     },
     addModel: function (model) {
         this.models[model.name] = model;
@@ -155,9 +144,9 @@ GraphicsSystem.prototype = {
             texture = this.renderTextureFromModel(template.model, color);
         else
             texture = this.renderTextureFromModel(template.model);
-        
+
         emitter.addInitialize(new Proton.ImageTarget(texture));
-        
+
         for (var j = 0; j < template.initialize.length; j++) {
             emitter.addInitialize(template.initialize[j]);
         }
@@ -191,18 +180,41 @@ GraphicsSystem.prototype = {
     },
     update: function () {
         //this.colorMatrix[1] = Math.sin(this.count/100) * 3;
-		//this.colorMatrix[2] = Math.cos(this.count/100);
-		//this.colorMatrix[3] = Math.cos(this.count/100) * 1.5;
-		//this.colorMatrix[4] = Math.sin(this.count/300) * 2;
-		//this.colorMatrix[5] = Math.sin(this.count/200);
-		//this.colorMatrix[6] = Math.sin(this.count/400);
-		//this.colorFilter.matrix = this.colorMatrix;
+        //this.colorMatrix[2] = Math.cos(this.count/100);
+        //this.colorMatrix[3] = Math.cos(this.count/100) * 1.5;
+        //this.colorMatrix[4] = Math.sin(this.count/300) * 2;
+        //this.colorMatrix[5] = Math.sin(this.count/200);
+        //this.colorMatrix[6] = Math.sin(this.count/400);
+        //this.colorFilter.matrix = this.colorMatrix;
 
         //this.count += 1;
 
-
         this.proton.update();
+        this.renderGrid();
         this.renderer.render(this.stage);
+    },
+    renderGrid: function () {
+        this.grid.clear();
+        this.grid.lineStyle(1, 0x555555);
+
+        var cellWidth = 100;
+        var cellHeight = 100;
+
+        for (var x = 0; x*cellWidth < this.worldDimensions.x; x++) {
+            for (var y = 0; y*cellHeight < this.worldDimensions.y; y++) {
+                this.grid.drawRect(
+                    Math.abs(x * 100) + 0.5,
+                    Math.abs(y * 100) + 0.5,
+                    100,
+                    100
+                );
+            }
+        }
+
+        this.grid.lineStyle(2, 0xbbbbbb);
+        this.grid.drawRect(0, 0, this.worldDimensions.x, this.worldDimensions.y);
+
+        //GraphicsSystem.drawNode(quadtree.root, g);
     }
 }
 
@@ -246,11 +258,6 @@ GraphicsSystem.drawNode = function (node, graphics) {
     }
 }
 
-GraphicsSystem.renderQuadtree = function (quadtree) {
-    var g = new PIXI.Graphics();
-    g.lineStyle(2, 0x555555);
-    GraphicsSystem.drawNode(quadtree.root, g);
-}
 
 GraphicsSystem.transformSprite = function (particleSprite, particle) {
     particleSprite.position.x = particle.p.x;

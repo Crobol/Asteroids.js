@@ -3,7 +3,8 @@
 var collisionGroup = {
     Player: Math.pow(2, 0),
     Projectile: Math.pow(2, 1),
-    Asteroid: Math.pow(2, 2)
+    Asteroid: Math.pow(2, 2),
+    World: Math.pow(2, 3)
 }
 
 var models = [
@@ -53,10 +54,11 @@ var models = [
 
 var playerTemplate = {
     entityTypeName: "player",
-    components: ["input", "attack", "movement", "friction", "physics", "health", "wrapAround", "graphics", "hud"],
+    components: ["input", "attack", "physics", "health", "graphics", "hud"],
     position: new Vector(0, 0),
     graphics: {
         model: "player",
+        followWithCamera: true,
         particleEmitterTemplates: [{
             triggerMessageType: "damageTaken",
             model: "particle",
@@ -67,38 +69,61 @@ var playerTemplate = {
         }]
     },
     movement: {
-        turnRate: 0.1,
-        acceleration: 10
     },
     attack: {
-        selectedWeapon: 0,
-        weapons: [
-            new Single(0.3, 1000),
-            new Multiple(0.4, 1000)
+        weaponSlots: [
+            {
+                name: "Slot 1",
+                weapon: new Rapid({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.04
+                }),//0.1, 800, 0.04),
+                position: new Vector(-15, 15),
+                rotation: 0,
+                isActive: true
+            },
+            {
+                name: "Slot 2",
+                weapon: new Rapid({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.04,
+                    delay: 0.05
+                }),//0.1, 800, 0.04),
+                position: new Vector(-15, -15),
+                rotation: 0,
+                isActive: true
+            }
         ]
     },
     health: {
         hitPoints: 100
     },
     physics: {
+        turnRate: 0.1,
+        acceleration: 10,
         collisionGroup: collisionGroup.Player,
-        collisionMask: collisionGroup.Asteroid
+        collisionMask: collisionGroup.Asteroid | collisionGroup.World
     }
 };
 
 var asteroidTemplate = {
     entityTypeName: "asteroid",
-    components: ["movement", "physics", "health", "wrapAround", "graphics", "destructable"],
+    components: ["physics", "health", "graphics", "destructable"],
     physics: {
         mass: 20,
         radius: 17,
         collisionDamage: 1,
         collisionGroup: collisionGroup.Asteroid,
-        collisionMask: collisionGroup.Player | collisionGroup.Asteroid | collisionGroup.Projectile
+        collisionMask: collisionGroup.Player | collisionGroup.Asteroid | collisionGroup.Projectile | collisionGroup.World
     },
     health: {
         hitPoints: 20,
         damageExceptions: ['asteroid', 'player']
+    },
+    destructable: {
+        scale: 0.6
     },
     graphics: {
          particleEmitterTemplates: [{
@@ -123,15 +148,20 @@ var asteroidTemplate = {
     }
 };
 
+var spinningEnemyTemplate = {
+    entityTypeName: "spinning-enemey",
+    components: []
+};
+
 var projectileTemplate = {
     entityTypeName: "projectile",
-    components: ["lifetime", "movement", "physics", "graphics"],
+    components: ["lifetime", "physics", "graphics"],
     physics: {
         radius: 2,
         mass: 2,
         collisionDamage: 10,
         collisionGroup: collisionGroup.Projectile,
-        collisionMask: collisionGroup.Asteroid
+        collisionMask: collisionGroup.Asteroid | collisionGroup.World
     },
     lifetime: {
         dieOnCollision: true
@@ -151,16 +181,17 @@ var projectileTemplate = {
 
 var flakProjectileTemplate = {
     entityTypeName: "flakProjectile",
-    components: ["lifetime", "movement", "physics", "graphics"],
+    components: ["lifetime", "physics", "graphics"],
     physics: {
         radius: 2,
         mass: 0.5,
         collisionDamage: 4,
         collisionGroup: collisionGroup.Projectile,
-        collisionMask: collisionGroup.Asteroid
+        collisionMask: collisionGroup.Asteroid | collisionGroup.World
     },
     lifetime: {
-        dieOnCollision: true
+        dieOnCollision: true,
+        lifetime: 10*1000
     },
     graphics: {
         model: "flakProjectile"
@@ -192,7 +223,6 @@ var flakProjectileTemplate = {
             //}
         //],
         //onRegister: function (entity) {
-            
         //}
     //}
 //}

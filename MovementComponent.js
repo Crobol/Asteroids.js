@@ -1,16 +1,17 @@
 "use strict";
 
+// TODO: Merge with PhysicsComponent
 var MovementComponent = function (messageHub) {
-	MovementComponent.shortName = "movement";
-	this.shortName = MovementComponent.shortName;
+    MovementComponent.shortName = "movement";
+    this.shortName = MovementComponent.shortName;
 
     if (debug)
         console.log("Creating component: " + this.shortName);
 
     this.dependencies = ["position"];
-	this.messageHub = messageHub;
+    this.messageHub = messageHub;
 
-	this.registerCallbacks(this.messageHub);
+    this.registerCallbacks(this.messageHub);
 }
 
 // Prototype methods
@@ -35,27 +36,27 @@ MovementComponent.prototype.registerCallbacks = function(messageHub) {
 }
 
 	// Private callbacks
-MovementComponent.prototype.accelerate = function(message) {
-    var entity = this.getEntityById(message.entityId);
-    entity.movement.xVel += entity.movement.acceleration * Math.cos(entity.rotation);
-    entity.movement.yVel += entity.movement.acceleration * Math.sin(entity.rotation);
-}
+// MovementComponent.prototype.accelerate = function(message) {
+//     var entity = this.getEntityById(message.entityId);
+//     entity.movement.xVel += entity.movement.acceleration * Math.cos(entity.rotation);
+//     entity.movement.yVel += entity.movement.acceleration * Math.sin(entity.rotation);
+// }
 
-MovementComponent.prototype.deaccelerate = function(message) {
-    var entity = this.getEntityById(message.entityId);
-    entity.movement.xVel -= entity.movement.acceleration * Math.cos(entity.rotation);
-    entity.movement.yVel -= entity.movement.acceleration * Math.sin(entity.rotation);
-}
+// MovementComponent.prototype.deaccelerate = function(message) {
+//     var entity = this.getEntityById(message.entityId);
+//     entity.movement.xVel -= entity.movement.acceleration * Math.cos(entity.rotation);
+//     entity.movement.yVel -= entity.movement.acceleration * Math.sin(entity.rotation);
+// }
 
-MovementComponent.prototype.turnLeft = function (message) {
-    var entity = this.getEntityById(message.entityId);
-    entity.rotation -= entity.movement.turnRate;
-}
+// MovementComponent.prototype.turnLeft = function (message) {
+//     var entity = this.getEntityById(message.entityId);
+//     entity.rotation -= entity.movement.turnRate;
+// }
 
-MovementComponent.prototype.turnRight = function (message) {
-    var entity = this.getEntityById(message.entityId);
-    entity.rotation += entity.movement.turnRate;
-}
+// MovementComponent.prototype.turnRight = function (message) {
+//     var entity = this.getEntityById(message.entityId);
+//     entity.rotation += entity.movement.turnRate;
+// }
 
 MovementComponent.prototype.createDefaultEntityData = function () {
 	var movement = {
@@ -63,7 +64,7 @@ MovementComponent.prototype.createDefaultEntityData = function () {
 		yVel: 0,
 		acceleration: 0.0,
 		turnRate: 0.0,
-        turnVel: 0
+    turnVel: 0
 	};
 
 	return movement;

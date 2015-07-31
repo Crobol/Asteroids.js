@@ -1,16 +1,16 @@
 "use strict";
 
 var DestructableComponent = function (messageHub) {
-	DestructableComponent.shortName = "destructable";
-	this.shortName = DestructableComponent.shortName;
+    DestructableComponent.shortName = "destructable";
+    this.shortName = DestructableComponent.shortName;
 
     if (debug)
         console.log("Creating component: " + this.shortName);
 
-    this.dependencies = ["position", "health", "movement", "graphics"];
-	this.messageHub = messageHub;
+    this.dependencies = ["position", "health", "graphics"];
+    this.messageHub = messageHub;
 
-	this.registerCallbacks(this.messageHub);
+    this.registerCallbacks(this.messageHub);
 }
 
 // Prototype methods
@@ -52,12 +52,10 @@ DestructableComponent.prototype.entityKilled = function(message) {
                 color:  entity.graphics.color,
                 'model': model
             },
-            movement: {
+            physics: {
                 xVel: Math.random() * 5 - 2.5,
                 yVel: Math.random() * 5 - 2.5,
-                turnVel: Math.random() * 0.2 - 0.1
-            },
-            physics: {
+                turnVel: Math.random() * 0.2 - 0.1,
                 radius: entity.physics.radius * scale,
                 mass: entity.physics.mass * scale,
                 collisionDamage: entity.physics.collisionDamage * scale
@@ -76,7 +74,7 @@ DestructableComponent.prototype.entityKilled = function(message) {
     }
 }
 
-DestructableComponent.prototype.createComponentEntityData = function () {
+DestructableComponent.prototype.createDefaultEntityData = function () {
 	var destructable = {
         stage: 3,
         scale: 0.5

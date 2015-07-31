@@ -9,12 +9,45 @@ var PhysicsComponent = function (messageHub, worldDimensions) {
     if (debug)
         console.log("Creating component: " + this.shortName);
 
-    this.dependencies = ["position", "movement"];
+    this.dependencies = ["position"];
     this.messageHub = messageHub;
 
     this.world = new p2.World({gravity: [0, 0]});
+    this.world.applyGravity = false;
     this.world.on("impact", function (e) { me.onCollision(e); });
     this.bodies = {};
+
+    // Create world boundries
+    var planeShape = new p2.Plane();
+    planeShape.collisionGroup = collisionGroup.World;
+    planeShape.collisionMask = 0xffffffff;
+    var planeBody = new p2.Body({ mass: 0, position:[0,worldDimensions.y] });
+    planeBody.addShape(planeShape);
+    planeBody.angle = Math.PI;
+    this.world.addBody(planeBody);
+
+    planeShape = new p2.Plane();
+    planeShape.collisionGroup = collisionGroup.World;
+    planeShape.collisionMask = 0xffffffff;
+    planeBody = new p2.Body({ mass: 0, position:[0,0] });
+    planeBody.addShape(planeShape);
+    this.world.addBody(planeBody);
+
+    planeShape = new p2.Plane();
+    planeShape.collisionGroup = collisionGroup.World;
+    planeShape.collisionMask = 0xffffffff;
+    planeBody = new p2.Body({ mass: 0, position:[worldDimensions.x,0] });
+    planeBody.angle = Math.PI/2;
+    planeBody.addShape(planeShape);
+    this.world.addBody(planeBody);
+
+    planeShape = new p2.Plane();
+    planeShape.collisionGroup = collisionGroup.World;
+    planeShape.collisionMask = 0xffffffff;
+    planeBody = new p2.Body({ mass: 0, position:[0,0] });
+    planeBody.angle = -Math.PI/2;
+    planeBody.addShape(planeShape);
+    this.world.addBody(planeBody);
 
     this.registerCallbacks(this.messageHub);
     this.now = new Date();
@@ -41,9 +74,9 @@ PhysicsComponent.prototype.registerEntity = function (entity) {
     this.bodies[entity.id] = new p2.Body({
         mass: entity.physics.mass,
         position: [entity.position.x, entity.position.y],
-        velocity: [entity.movement.xVel, entity.movement.yVel],
+        velocity: [entity.physics.xVel, entity.physics.yVel],
         angle: entity.rotation,
-        angularVelocity: entity.movement.turnVel
+        angularVelocity: entity.physics.turnVel
     });
 
     this.bodies[entity.id].entityId = entity.id;
@@ -67,10 +100,12 @@ PhysicsComponent.prototype.update = function (now) {
     // TODO: change to message "setPosition" and "setRotation"?
     for (var i = 0; i < this.entities.length; i++) {
         var entity = this.entities[i];
-        var body = this.bodies[entity.id];        
-        body.position[0] = entity.position.x; 
+        var body = this.bodies[entity.id];
+        body.position[0] = entity.position.x;
         body.position[1] = entity.position.y;
         body.angle = entity.rotation;
+        body.velocity[0] = entity.physics.xVel;
+        body.velocity[1] = entity.physics.yVel;
     }
 
     this.world.step(1/60);
@@ -81,6 +116,8 @@ PhysicsComponent.prototype.update = function (now) {
         entity.position.x = body.position[0];
         entity.position.y = body.position[1];
         entity.rotation = body.angle;
+        entity.physics.xVel = body.velocity[0];
+        entity.physics.yVel = body.velocity[1];
     }
 }
 
@@ -88,55 +125,69 @@ PhysicsComponent.prototype.update = function (now) {
 PhysicsComponent.prototype.accelerate = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    body.velocity[0] += entity.movement.acceleration * Math.cos(body.angle);
-    body.velocity[1] += entity.movement.acceleration * Math.sin(body.angle);
+    // body.velocity[0] += entity.physics.acceleration * Math.cos(body.angle);
+    // body.velocity[1] += entity.physics.acceleration * Math.sin(body.angle);
+    entity.physics.xVel += entity.physics.acceleration * Math.cos(body.angle);
+    entity.physics.yVel += entity.physics.acceleration * Math.sin(body.angle);
 }
 
 PhysicsComponent.prototype.deaccelerate = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    body.velocity[0] -= entity.movement.acceleration * Math.cos(body.angle);
-    body.velocity[1] -= entity.movement.acceleration * Math.sin(body.angle);
+    // body.velocity[0] -= entity.physics.acceleration * Math.cos(body.angle);
+    // body.velocity[1] -= entity.physics.acceleration * Math.sin(body.angle);
+    entity.physics.xVel -= entity.physics.acceleration * Math.cos(body.angle);
+    entity.physics.yVel -= entity.physics.acceleration * Math.sin(body.angle);
 }
 
 PhysicsComponent.prototype.turnLeft = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    body.angle -= entity.movement.turnRate;
-    entity.rotation -= entity.movement.turnRate;
+    body.angle -= entity.physics.turnRate;
+    entity.rotation -= entity.physics.turnRate;
 }
 
 PhysicsComponent.prototype.turnRight = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    body.angle += entity.movement.turnRate;
-    entity.rotation += entity.movement.turnRate;
+    body.angle += entity.physics.turnRate;
+    entity.rotation += entity.physics.turnRate;
 }
 
 PhysicsComponent.prototype.onCollision = function (e) {
     var bodyA = e.bodyA;
     var bodyB = e.bodyB;
 
-    var a = this.getEntityById(bodyA.entityId);
-    var b = this.getEntityById(bodyB.entityId);
+    if (typeof e.bodyA.entityId != 'undefined' && typeof e.bodyB.entityId != 'undefined') {
+        var a = this.getEntityById(bodyA.entityId);
+        var b = this.getEntityById(bodyB.entityId);
 
-    if (a.hasComponent("health") && !a.componentPropertyContains("health", "damageExceptions", b.entityTypeName)) {
-        a.health.currentHitPoints -= b.physics.collisionDamage;
-        this.messageHub.sendMessage({ type: "damageTaken", entityId: a.id, fromEntityId: b.id }); //
+        if (a.hasComponent("health") && !a.componentPropertyContains("health", "damageExceptions", b.entityTypeName)) {
+            a.health.currentHitPoints -= b.physics.collisionDamage;
+            this.messageHub.sendMessage({ type: "damageTaken", entityId: a.id, fromEntityId: b.id });
+        }
+
+        if (b.hasComponent("health") && !b.componentPropertyContains("health", "damageExceptions", a.entityTypeName)) {
+            b.health.currentHitPoints -= a.physics.collisionDamage;
+            this.messageHub.sendMessage({ type: "damageTaken", entityId: b.id, fromEntityId: a.id });
+        }
     }
 
-    if (b.hasComponent("health") && !b.componentPropertyContains("health", "damageExceptions", a.entityTypeName)) {
-        b.health.currentHitPoints -= a.physics.collisionDamage;
-        this.messageHub.sendMessage({ type: "damageTaken", entityId: b.id, fromEntityId: a.id });
-    }
+    if (typeof e.bodyA.entityId != 'undefined')
+        this.messageHub.sendMessage({ type: "collision", entityId: bodyA.entityId });
 
-    this.messageHub.sendMessage({ type: "collision", entityId: bodyA.entityId });
-    this.messageHub.sendMessage({ type: "collision", entityId: bodyB.entityId });
+    if (typeof e.bodyB.entityId != 'undefined')
+        this.messageHub.sendMessage({ type: "collision", entityId: bodyB.entityId });
 }
 
 PhysicsComponent.prototype.createDefaultEntityData = function () {
     // Default values
     var physics = {
+        xVel: 0,
+        yVel: 0,
+        acceleration: 0.0,
+        turnRate: 0.0,
+        turnVel: 0,
         radius: 20,
         mass: 1,
         collisionDamage: 0

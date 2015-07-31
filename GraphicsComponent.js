@@ -1,6 +1,6 @@
 "use strict";
 
-var GraphicsComponent = function (messageHub, viewportDimensions) {
+var GraphicsComponent = function (messageHub, viewportDimensions, worldDimensions) {
     GraphicsComponent.shortName = "graphics";
     this.shortName = GraphicsComponent.shortName;
 
@@ -12,7 +12,8 @@ var GraphicsComponent = function (messageHub, viewportDimensions) {
 
     this.registerCallbacks(messageHub);
 
-    this.graphics = new GraphicsSystem(viewportDimensions);
+    this.graphics = new GraphicsSystem(viewportDimensions, worldDimensions);
+    this.entityToFollow = 0;
 }
 
 GraphicsComponent.prototype = new Component();
@@ -30,7 +31,11 @@ GraphicsComponent.prototype.addModel = function (model) {
 GraphicsComponent.prototype.registerEntity = function (entity) {
     this.registerEntityBase(entity);
 
-    if (typeof entity.graphics.model != 'undefined') {
+    if (entity.hasComponentProperty("graphics", "followWithCamera") && entity.graphics.followWithCamera) {
+        this.entityToFollow = entity.id;
+    }
+
+    if (entity.hasComponentProperty("graphics", "model")) {
         var sprite = this.graphics.createSpriteFromModel(entity.graphics.model);
         sprite.position.x = entity.position.x;
         sprite.position.y = entity.position.y;
@@ -97,6 +102,11 @@ GraphicsComponent.prototype.update = function (now) {
             var emitter = entity.graphics.particleEmitters[j];
             emitter.p.x = entity.position.x;
             emitter.p.y = entity.position.y;
+        }
+
+        if (entity.id == this.entityToFollow) {
+            this.graphics.stage.position.x = -(entity.position.x - (this.graphics.viewportDimensions.x / 2));
+            this.graphics.stage.position.y = -(entity.position.y - (this.graphics.viewportDimensions.y / 2));
         }
     }
     this.graphics.update();

@@ -6,6 +6,8 @@ var Weapon = function () {
     this.ammunitionCapacity = 1;
     this.currentAmmunition = this.ammunitionCapacity;
     this.delay = 0;
+    this.collisionGroup = 0;
+    this.collisionMask = 0;
 
     this.position = new Vector(0, 0);
     this.rotation = 0;

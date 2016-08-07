@@ -1,10 +1,11 @@
 "use strict";
 
 var collisionGroup = {
-    Player: Math.pow(2, 0),
-    Projectile: Math.pow(2, 1),
-    Asteroid: Math.pow(2, 2),
-    World: Math.pow(2, 3)
+    Player: Math.pow(2, 1),
+    Projectile: Math.pow(2, 2),
+    EnemyProjectile: Math.pow(2, 3),
+    Asteroid: Math.pow(2, 4),
+    World: Math.pow(2, 5)
 }
 
 var models = [
@@ -22,13 +23,27 @@ var models = [
         color: 0x00ff00
     },
     {
+        name: "star",
+        points: [
+            { x: 0, y: 20 },
+            { x: 5, y: 5 },
+            { x: 20, y: 0 },
+            { x: 5, y: -5 },
+            { x: 0, y: -20 },
+            { x: -5, y: -5 },
+            { x: -20, y: 0 },
+            { x: -5, y: 5 },
+        ],
+        color: primaryColors[colorIndex.red]
+    },
+    {
         name: "projectile",
         points: [
             { x: 2, y: 0 },
             { x: -2, y: 2 },
             { x: -2, y: -2 }
         ],
-        color: 0x00ff00
+        color: primaryColors[colorIndex.red]
     },
     {
         name: "flakProjectile",
@@ -68,11 +83,20 @@ var playerTemplate = {
             position: new Vector(0, 0)
         }]
     },
-    movement: {
-    },
     attack: {
         weaponSlots: [
             {
+                name: "Slot 1",
+                weapon: new Multiple({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.04
+                }),//0.1, 800, 0.04),
+                position: new Vector(10, 0),
+                rotation: 0,
+                isActive: true
+            },
+            /*{
                 name: "Slot 1",
                 weapon: new Rapid({
                     fireRate: 0.1,
@@ -89,12 +113,12 @@ var playerTemplate = {
                     fireRate: 0.1,
                     projectileVelocity: 800,
                     spread: 0.04,
-                    delay: 0.05
+                    delay: 50
                 }),//0.1, 800, 0.04),
                 position: new Vector(-15, -15),
                 rotation: 0,
                 isActive: true
-            }
+            }*/
         ]
     },
     health: {
@@ -104,7 +128,104 @@ var playerTemplate = {
         turnRate: 0.1,
         acceleration: 10,
         collisionGroup: collisionGroup.Player,
-        collisionMask: collisionGroup.Asteroid | collisionGroup.World
+        collisionMask: collisionGroup.Asteroid | collisionGroup.World | collisionGroup.EnemyProjectile,
+        fixedRotation: true
+    }
+};
+
+var spinningEnemyTemplate = {
+    entityTypeName: "Spinner",
+    components: ["attack", "physics", "ai", "health", "graphics"],
+    graphics: {
+        model: "star",
+        particleEmitterTemplates: [{
+                triggerMessageType: "entityKilled",
+                model: {
+                    points: [{ x: -4, y: -1 }, { x: 4, y: -1 }, { x: 4, y: 1 }, { x: -4, y: 1 }]
+                },
+                rate: new Proton.Rate(new Proton.Span(5, 10), new Proton.Span(0.01)),
+                initialize: [new Proton.Life(1), new Proton.V(new Proton.Span(1), new Proton.Span(0, 360), 'polar'), new Proton.Position(new Proton.CircleZone(0, 0, 17))],
+                behaviours: [new Proton.Alpha(1, 0), new Proton.Rotate()],
+                position: new Vector(0, 0)
+            },
+            {
+                triggerMessageType: "damageTaken",
+                model: "particle",
+                rate: new Proton.Rate(new Proton.Span(5, 10), new Proton.Span(0.01)),
+                initialize: [new Proton.Life(1), new Proton.V(new Proton.Span(1), new Proton.Span(0, 360), 'polar'), new Proton.Position(new Proton.CircleZone(0, 0, 17))],
+                behaviours: [new Proton.Alpha(1, 0), new Proton.Rotate()],
+                position: new Vector(0, 0)
+            }
+        ]
+    },
+    physics: {
+        mass: 1,
+        radius: 20,
+        collisionDamage: 1,
+        collisionGroup: collisionGroup.Asteroid,
+        collisionMask: collisionGroup.Player | collisionGroup.Asteroid | collisionGroup.World | collisionGroup.Projectile
+    },
+    health: {
+        hitPoints: 200,
+        damageExceptions: ['asteroid']
+    },
+    attack: {
+        weaponSlots: [
+            {
+                name: "Slot 1",
+                weapon: new Single({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.0,
+                    collisionGroup: collisionGroup.EnemyProjectile,
+                    collisionMask: collisionGroup.Player | collisionGroup.World | collisionGroup.Asteroid
+                }),
+                position: new Vector(20, 0),
+                rotation: 0,
+                isActive: true
+            },
+            {
+                name: "Slot 2",
+                weapon: new Single({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.0,
+                    delay: 1000,
+                    collisionGroup: collisionGroup.EnemyProjectile,
+                    collisionMask: collisionGroup.Player | collisionGroup.World | collisionGroup.Asteroid
+                }),
+                position: new Vector(0, 20),
+                rotation: Math.PI / 2,
+                isActive: true
+            },
+            {
+                name: "Slot 3",
+                weapon: new Single({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.0,
+                    collisionGroup: collisionGroup.EnemyProjectile,
+                    collisionMask: collisionGroup.Player | collisionGroup.World | collisionGroup.Asteroid
+                }),
+                position: new Vector(-20, 0),
+                rotation: Math.PI,
+                isActive: true
+            },
+            {
+                name: "Slot 4",
+                weapon: new Single({
+                    fireRate: 0.1,
+                    projectileVelocity: 800,
+                    spread: 0.0,
+                    delay: 1000,
+                    collisionGroup: collisionGroup.EnemyProjectile,
+                    collisionMask: collisionGroup.Player | collisionGroup.World | collisionGroup.Asteroid
+                }),
+                position: new Vector(0, -20),
+                rotation: Math.PI * 1.5,
+                isActive: true
+            }
+        ]
     }
 };
 
@@ -116,7 +237,7 @@ var asteroidTemplate = {
         radius: 17,
         collisionDamage: 1,
         collisionGroup: collisionGroup.Asteroid,
-        collisionMask: collisionGroup.Player | collisionGroup.Asteroid | collisionGroup.Projectile | collisionGroup.World
+        collisionMask: collisionGroup.Player | collisionGroup.Asteroid | collisionGroup.Projectile | collisionGroup.World | collisionGroup.EnemyProjectile
     },
     health: {
         hitPoints: 20,
@@ -148,11 +269,6 @@ var asteroidTemplate = {
     }
 };
 
-var spinningEnemyTemplate = {
-    entityTypeName: "spinning-enemey",
-    components: []
-};
-
 var projectileTemplate = {
     entityTypeName: "projectile",
     components: ["lifetime", "physics", "graphics"],
@@ -164,7 +280,8 @@ var projectileTemplate = {
         collisionMask: collisionGroup.Asteroid | collisionGroup.World
     },
     lifetime: {
-        dieOnCollision: true
+        dieOnCollision: true,
+        lifetime: 10*1000
     },
     graphics: {
         model: "projectile",

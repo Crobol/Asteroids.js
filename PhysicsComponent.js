@@ -14,6 +14,8 @@ var PhysicsComponent = function (messageHub, worldDimensions) {
 
     this.world = new p2.World({gravity: [0, 0]});
     this.world.applyGravity = false;
+    this.world.applyDamping = false;
+    this.world.applySpringForces = false;
     this.world.on("impact", function (e) { me.onCollision(e); });
     this.bodies = {};
 
@@ -76,7 +78,8 @@ PhysicsComponent.prototype.registerEntity = function (entity) {
         position: [entity.position.x, entity.position.y],
         velocity: [entity.physics.xVel, entity.physics.yVel],
         angle: entity.rotation,
-        angularVelocity: entity.physics.turnVel
+        angularVelocity: entity.physics.turnVel,
+        fixedRotation: entity.physics.fixedRotation
     });
 
     this.bodies[entity.id].entityId = entity.id;
@@ -125,8 +128,6 @@ PhysicsComponent.prototype.update = function (now) {
 PhysicsComponent.prototype.accelerate = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    // body.velocity[0] += entity.physics.acceleration * Math.cos(body.angle);
-    // body.velocity[1] += entity.physics.acceleration * Math.sin(body.angle);
     entity.physics.xVel += entity.physics.acceleration * Math.cos(body.angle);
     entity.physics.yVel += entity.physics.acceleration * Math.sin(body.angle);
 }
@@ -134,8 +135,6 @@ PhysicsComponent.prototype.accelerate = function (message) {
 PhysicsComponent.prototype.deaccelerate = function (message) {
     var entity = this.getEntityById(message.entityId);
     var body = this.bodies[entity.id];
-    // body.velocity[0] -= entity.physics.acceleration * Math.cos(body.angle);
-    // body.velocity[1] -= entity.physics.acceleration * Math.sin(body.angle);
     entity.physics.xVel -= entity.physics.acceleration * Math.cos(body.angle);
     entity.physics.yVel -= entity.physics.acceleration * Math.sin(body.angle);
 }
@@ -190,7 +189,8 @@ PhysicsComponent.prototype.createDefaultEntityData = function () {
         turnVel: 0,
         radius: 20,
         mass: 1,
-        collisionDamage: 0
+        collisionDamage: 0,
+        fixedRotation: false
     };
 
     return physics;

@@ -29,6 +29,8 @@ var GraphicsSystem = function (viewportDimensions, worldDimensions) {
     this.stage.addChild(this.blurBatch);
 
     this._initProton();
+
+    this.renderGrid();
 }
 
 GraphicsSystem.prototype = {
@@ -190,7 +192,6 @@ GraphicsSystem.prototype = {
         //this.count += 1;
 
         this.proton.update();
-        this.renderGrid();
         this.renderer.render(this.stage);
     },
     renderGrid: function () {
@@ -213,8 +214,6 @@ GraphicsSystem.prototype = {
 
         this.grid.lineStyle(2, 0xbbbbbb);
         this.grid.drawRect(0, 0, this.worldDimensions.x, this.worldDimensions.y);
-
-        //GraphicsSystem.drawNode(quadtree.root, g);
     }
 }
 

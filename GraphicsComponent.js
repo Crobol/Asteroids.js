@@ -54,15 +54,19 @@ GraphicsComponent.prototype.registerEntity = function (entity) {
         for (var i = 0; i < entity.graphics.particleEmitterTemplates.length; i++) {
             var template = entity.graphics.particleEmitterTemplates[i];
 
-            var color = 0x00ff00;
-            if (typeof template.model != 'string' && typeof template.model.color == 'undefined') {
-                color = entity.graphics.model.color;
+            // TODO: Refactor this 'if'
+            var color = 0x00ff00; // Default color
+            if (typeof entity.graphics.model.color != 'undefined' && typeof template.model != 'string' && typeof template.model.color == 'undefined') {
+                color = entity.graphics.model.color; // The entity's current color
             }
             else if (typeof template.model == 'string' && typeof template.model.color != 'undefined') {
-                color = template.model.color;
+                color = template.model.color; // The emitter template specified color
             }
             else if (typeof template.model == 'string' && typeof entity.graphics.model != 'undefined' && typeof entity.graphics.model.color != 'undefined') {
                 color = entity.graphics.model.color;
+            }
+            else if (typeof entity.graphics.model == 'string' && this.graphics.models[entity.graphics.model] != null && typeof this.graphics.models[entity.graphics.model].color != 'undefined') {
+                color = this.graphics.models[entity.graphics.model].color;
             }
             var emitter = this.graphics.createParticleEmitter(template, color);
             if (typeof template.onCreate != 'undefined') {

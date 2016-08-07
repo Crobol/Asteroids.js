@@ -4,7 +4,13 @@ var Multiple = function (options) {
     this.name = "Flak";
     this.entityTypeName = "flakProjectile";
     this.fireRate = 1.0;
+    this.lastFire = 0;
+    this.reloadTime = 0.3;
+    this.lastReload = 0;
+    this.ammunitionCapacity = 100;
+    this.currentAmmunition = this.ammunitionCapacity;
     this.projectileVelocity = 1000;
+    this.spread = 0.04;
 
     this.position = new Vector(0, 10);
     this.rotation = 0;

@@ -68,7 +68,7 @@ DestructableComponent.prototype.entityKilled = function(message) {
                 stage: numToSpawn - 1,
                 "edges": edges / numToSpawn
             }
-        }
+        };
 
         this.messageHub.sendMessage({ type: "spawnEntity", entityTypeName: "asteroid", componentData: overrides });
     }

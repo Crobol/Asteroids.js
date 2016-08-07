@@ -3,6 +3,9 @@
 var debug = true;
 
 var primaryColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ff00, 0x00ffff, 0xffffff];
+var colorIndex = {
+    red: 0
+}
 
 function generateId() {	
     if ( typeof generateId.counter == 'undefined' ) {
@@ -47,23 +50,29 @@ function extend(obj) {
     return obj;
 }
 
-function createRandomAsteroid(entityManager, worldDimensions) {
-    var model = [];
+function createRandomModelPoints() {
+    var modelPoints = [];
     var edges = 3 + Math.round(Math.random() * 5);
     var unit = 2 * Math.PI / edges;
-    var velocity = 500;
-    var angularVelocity = 5;
 
     for (var j = 0; j < edges; j++) {
-        model.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
+        modelPoints.push({x: 20 * Math.cos(unit * j), y: 20 * Math.sin(unit * j)});
     }
+
+    return modelPoints;
+}
+
+function createRandomAsteroid(entityManager, worldDimensions) {
+    var modelPoints = createRandomModelPoints();
+    var velocity = 500;
+    var angularVelocity = 5;
 
     var overrides = { 
         position: new Vector(Math.random() * worldDimensions.x, Math.random() * worldDimensions.y), 
         graphics: {
             model: {
                 color:  primaryColors[Math.floor(Math.random() * primaryColors.length)],
-                'points': model
+                'points': modelPoints
             }
         },
         physics: {

@@ -19,7 +19,7 @@ var Single = function (options) {
 
 Single.prototype = new Weapon();
 
-Single.prototype.createProjectiles = function (firingEntity, now, position, rotation) {
+Single.prototype.createProjectiles = function (firingEntity, position, rotation) {
     if (typeof position == 'undefined') {
         position = this.position;
     }
@@ -28,7 +28,7 @@ Single.prototype.createProjectiles = function (firingEntity, now, position, rota
         rotation = this.rotation;
     }
 
-    var projectilePosition = this.aboslutePosition(firingEntity, position);
+    var projectilePosition = this.absolutePosition(firingEntity, position);
     var projectileRotation = firingEntity.rotation + rotation;
 
     var projectile = {
@@ -39,8 +39,21 @@ Single.prototype.createProjectiles = function (firingEntity, now, position, rota
             xVel: this.projectileVelocity * Math.cos(projectileRotation),
             yVel: this.projectileVelocity * Math.sin(projectileRotation),
             dieOnCollision: true
-        }
+        }// ,
+        // graphics: {
+        //     model: {
+        //         color: firingEntity.graphics.model
+        //     }
+        // }
     };
+
+    if (this.collisionGroup > 0) {
+        projectile.physics.collisionGroup = this.collisionGroup;
+    }
+
+    if (this.collisionMask > 0) {
+        projectile.physics.collisionMask = this.collisionMask;
+    }
 
     return [projectile];
 }

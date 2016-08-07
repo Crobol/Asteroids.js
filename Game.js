@@ -41,6 +41,7 @@ var lifetimeComponent = new LifetimeComponent(messageHub);
 var destructableComponent = new DestructableComponent(messageHub);
 var frictionComponent = new FrictionComponent(messageHub);
 var hudComponent = new HudComponent(messageHub);
+var aiComponent = new AiComponent(messageHub);
 
 componentManager.addComponent(inputComponent);
 componentManager.addComponent(attackComponent);
@@ -51,6 +52,7 @@ componentManager.addComponent(graphicsComponent);
 componentManager.addComponent(destructableComponent);
 componentManager.addComponent(lifetimeComponent);
 componentManager.addComponent(hudComponent);
+componentManager.addComponent(aiComponent);
 
 for (var i = 0; i < models.length; i++) {
     graphicsComponent.addModel(models[i]);
@@ -62,6 +64,7 @@ entityFactory.addEntityTemplate("player", playerTemplate);
 entityFactory.addEntityTemplate("asteroid", asteroidTemplate);
 entityFactory.addEntityTemplate("projectile", projectileTemplate);
 entityFactory.addEntityTemplate("flakProjectile", flakProjectileTemplate);
+entityFactory.addEntityTemplate("spinningEnemy", spinningEnemyTemplate);
 
 var entityManager = new EntityManager(messageHub, componentManager, entityFactory);
 
@@ -70,19 +73,21 @@ player.position.x = worldDimensions.x / 2;
 player.position.y = worldDimensions.y / 2;
 entityManager.addEntity(player);
 
-/*setInterval(function () {
-  var asteroid = createRandomAsteroid(entityManager, worldDimensions);
-  entityManager.addEntity(asteroid); 
-  }, 5000);*/
-
-//var laser = entityManager.entityFactory.createEntityFromTemplate("laser");
-//laser.position.x = worldDimensions.x / 2;
-//laser.position.y = worldDimensions.y / 2;
-//entityManager.addEntity(laser);
-
-for (var i = 0; i < 40; i++) {
+for (var i = 0; i < 10; i++) {
     var asteroid = createRandomAsteroid(entityManager, worldDimensions);
     entityManager.addEntity(asteroid); 
 }
+
+var overrides = {
+    physics: {
+        turnVel: Math.random() * 10 - 10 / 2
+    }
+};
+var enemy = entityManager.entityFactory.createEntityFromTemplate("spinningEnemy", overrides);
+enemy.position.x = worldDimensions.x / 2 - 200;
+enemy.position.y = worldDimensions.y / 2 + 200;
+enemy.physics.xVel = Math.random() * 100 - 100 / 2;
+enemy.physics.yVel = Math.random() * 100 - 100 / 2;
+entityManager.addEntity(enemy);
 
 requestAnimationFrame(function () { entityManager.update(); });
